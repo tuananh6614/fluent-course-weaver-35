@@ -17,6 +17,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import ManageCourses from "./pages/admin/ManageCourses";
 import ManageUsers from "./pages/admin/ManageUsers";
 import NotFound from "./pages/NotFound";
+import CategoryCourses from "./pages/CategoryCourses";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetail />} />
+          <Route path="/courses/category/:slug" element={<CategoryCourses />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/about" element={<About />} />

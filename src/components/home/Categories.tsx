@@ -17,25 +17,25 @@ interface CategoryItem {
 
 const categories: CategoryItem[] = [
   {
-    name: "Programming",
+    name: "Lập Trình",
     icon: <Code className="h-10 w-10" />,
     count: 127,
     slug: "programming",
   },
   {
-    name: "Data Science",
+    name: "Khoa Học Dữ Liệu",
     icon: <Database className="h-10 w-10" />,
     count: 95,
     slug: "data-science",
   },
   {
-    name: "Design",
+    name: "Thiết Kế",
     icon: <Brush className="h-10 w-10" />,
     count: 82,
     slug: "design",
   },
   {
-    name: "Business",
+    name: "Kinh Doanh",
     icon: <Briefcase className="h-10 w-10" />,
     count: 140,
     slug: "business",
@@ -47,31 +47,31 @@ const categories: CategoryItem[] = [
     slug: "marketing",
   },
   {
-    name: "Personal Development",
+    name: "Phát Triển Cá Nhân",
     icon: <BookOpen className="h-10 w-10" />,
     count: 115,
     slug: "personal-development",
   },
   {
-    name: "Finance",
+    name: "Tài Chính",
     icon: <BarChart className="h-10 w-10" />,
     count: 68,
     slug: "finance",
   },
   {
-    name: "Video & Photography",
+    name: "Video & Nhiếp Ảnh",
     icon: <Film className="h-10 w-10" />,
     count: 53,
     slug: "video-photography",
   },
   {
-    name: "Audio & Music",
+    name: "Âm Thanh & Âm Nhạc",
     icon: <Mic className="h-10 w-10" />,
     count: 42,
     slug: "audio-music",
   },
   {
-    name: "Language Learning",
+    name: "Học Ngoại Ngữ",
     icon: <Globe className="h-10 w-10" />,
     count: 67,
     slug: "language-learning",
@@ -83,8 +83,8 @@ const Categories: React.FC = () => {
     <section className="section-padding">
       <div className="page-container">
         <SectionHeading
-          title="Browse Categories"
-          subtitle="Find the perfect course from our diverse categories"
+          title="Duyệt Theo Danh Mục"
+          subtitle="Tìm khóa học phù hợp từ các danh mục đa dạng của chúng tôi"
         />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
@@ -100,7 +100,7 @@ const Categories: React.FC = () => {
                   <div className="mb-4 text-primary">{category.icon}</div>
                   <h3 className="font-medium mb-1">{category.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {category.count} courses
+                    {category.count} khóa học
                   </p>
                 </CardContent>
               </Card>
