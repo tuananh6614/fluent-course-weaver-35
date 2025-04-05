@@ -1,9 +1,6 @@
 
-// This file is marked as read-only, so we can't directly modify it.
-// Please create a new version of this file without the Certificate icon reference:
-
 import React from "react";
-import { BookOpen, Monitor, Users, Award } from "lucide-react"; // Changed Certificate to Award
+import { BookOpen, Monitor, Users, Award } from "lucide-react"; // Using Award instead of Certificate
 import SectionHeading from "@/components/common/SectionHeading";
 
 const featuresData = [
@@ -26,14 +23,14 @@ const featuresData = [
       "Learn from industry professionals with years of experience and a passion for teaching their craft.",
   },
   {
-    icon: <Award className="h-12 w-12 text-primary mb-4" />, // Changed from Certificate to Award
+    icon: <Award className="h-12 w-12 text-primary mb-4" />, // Using Award icon instead of Certificate
     title: "Recognized Certification",
     description:
       "Earn certificates upon course completion to showcase your new skills and enhance your professional profile.",
   },
 ];
 
-const Features = () => {
+const CustomFeatures = () => {
   return (
     <section className="py-24 bg-muted">
       <div className="page-container">
@@ -60,4 +57,4 @@ const Features = () => {
   );
 };
 
-export default Features;
+export default CustomFeatures;
