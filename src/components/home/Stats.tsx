@@ -25,22 +25,22 @@ const Stats: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <StatItem
             icon={<Users className="h-8 w-8" />}
-            value="50K+"
+            value="0+"
             label="Học Viên Tích Cực"
           />
           <StatItem
             icon={<BookOpen className="h-8 w-8" />}
-            value="500+"
+            value="0+"
             label="Khóa Học Chất Lượng"
           />
           <StatItem
             icon={<GraduationCap className="h-8 w-8" />}
-            value="200+"
+            value="0+"
             label="Giảng Viên Chuyên Gia"
           />
           <StatItem
             icon={<Award className="h-8 w-8" />}
-            value="15K+"
+            value="0+"
             label="Chứng Chỉ Đã Cấp"
           />
         </div>

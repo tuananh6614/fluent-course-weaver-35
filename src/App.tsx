@@ -11,6 +11,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Profile from "./pages/Profile";
+import Admin from "./pages/admin/Admin";
+import Dashboard from "./pages/admin/Dashboard";
+import ManageCourses from "./pages/admin/ManageCourses";
+import ManageUsers from "./pages/admin/ManageUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,7 +34,11 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/courses" element={<ManageCourses />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

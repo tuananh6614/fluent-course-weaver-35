@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Search, User, BookOpen } from "lucide-react";
+import { Menu, X, User, BookOpen } from "lucide-react";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,10 +64,6 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button size="sm" variant="ghost">
-              <Search className="h-5 w-5 mr-2" />
-              Tìm Kiếm
-            </Button>
             <Button size="sm" variant="outline" asChild>
               <Link to="/login">Đăng Nhập</Link>
             </Button>
