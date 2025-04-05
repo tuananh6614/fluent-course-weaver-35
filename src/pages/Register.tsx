@@ -11,20 +11,20 @@ const Register: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="hidden md:block">
               <div className="max-w-md">
-                <h1 className="text-4xl font-bold mb-6">Join Our Learning Community</h1>
+                <h1 className="text-4xl font-bold mb-6">Tham Gia Cộng Đồng Học Tập</h1>
                 <p className="text-muted-foreground text-lg mb-6">
-                  Create your account and start your learning journey today. Access a world of
-                  knowledge and skills to advance your career and personal growth.
+                  Tạo tài khoản và bắt đầu hành trình học tập của bạn ngay hôm nay. Truy cập thế giới
+                  kiến thức và kỹ năng để phát triển sự nghiệp và bản thân.
                 </p>
                 <div className="p-6 bg-muted rounded-lg">
-                  <h3 className="font-semibold text-lg mb-4">Benefits of membership</h3>
+                  <h3 className="font-semibold text-lg mb-4">Lợi ích của thành viên</h3>
                   <ul className="space-y-3">
                     {[
-                      "Unlimited access to our course library",
-                      "Track your progress across all courses",
-                      "Save and bookmark your favorite lessons",
-                      "Engage with instructors and fellow students",
-                      "Receive course completion certificates",
+                      "Truy cập không giới hạn vào thư viện khóa học của chúng tôi",
+                      "Theo dõi tiến độ của bạn trên tất cả các khóa học",
+                      "Lưu và đánh dấu các bài học yêu thích của bạn",
+                      "Tương tác với giảng viên và học viên khác",
+                      "Nhận chứng chỉ hoàn thành khóa học",
                     ].map((item, index) => (
                       <li key={index} className="flex items-start">
                         <div className="mr-2 mt-1 h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">

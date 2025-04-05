@@ -1,32 +1,32 @@
 
 import React from "react";
-import { BookOpen, Monitor, Users, Award } from "lucide-react"; // Using Award instead of Certificate
+import { BookOpen, Monitor, Users, Award } from "lucide-react";
 import SectionHeading from "@/components/common/SectionHeading";
 
 const featuresData = [
   {
     icon: <BookOpen className="h-12 w-12 text-primary mb-4" />,
-    title: "Comprehensive Curriculum",
+    title: "Chương Trình Học Toàn Diện",
     description:
-      "Our courses cover everything from foundational concepts to advanced techniques, ensuring a thorough understanding of the subject matter.",
+      "Các khóa học của chúng tôi bao gồm mọi thứ từ khái niệm cơ bản đến kỹ thuật nâng cao, đảm bảo hiểu biết toàn diện về nội dung học tập.",
   },
   {
     icon: <Monitor className="h-12 w-12 text-primary mb-4" />,
-    title: "Interactive Learning",
+    title: "Học Tập Tương Tác",
     description:
-      "Engage with dynamic content, hands-on projects, and interactive exercises designed to reinforce your learning.",
+      "Tương tác với nội dung sống động, dự án thực hành và bài tập tương tác được thiết kế để củng cố kiến thức của bạn.",
   },
   {
     icon: <Users className="h-12 w-12 text-primary mb-4" />,
-    title: "Expert Instructors",
+    title: "Giảng Viên Chuyên Gia",
     description:
-      "Learn from industry professionals with years of experience and a passion for teaching their craft.",
+      "Học từ các chuyên gia trong ngành với nhiều năm kinh nghiệm và đam mê giảng dạy.",
   },
   {
-    icon: <Award className="h-12 w-12 text-primary mb-4" />, // Using Award icon instead of Certificate
-    title: "Recognized Certification",
+    icon: <Award className="h-12 w-12 text-primary mb-4" />,
+    title: "Chứng Chỉ Được Công Nhận",
     description:
-      "Earn certificates upon course completion to showcase your new skills and enhance your professional profile.",
+      "Nhận chứng chỉ sau khi hoàn thành khóa học để thể hiện kỹ năng mới và nâng cao hồ sơ chuyên môn của bạn.",
   },
 ];
 
@@ -35,8 +35,8 @@ const CustomFeatures = () => {
     <section className="py-24 bg-muted">
       <div className="page-container">
         <SectionHeading
-          title="Why Choose Our Platform"
-          subtitle="We provide the tools and resources you need to achieve your learning goals"
+          title="Tại Sao Chọn Nền Tảng Của Chúng Tôi"
+          subtitle="Chúng tôi cung cấp công cụ và tài nguyên bạn cần để đạt được mục tiêu học tập"
           align="center"
         />
 

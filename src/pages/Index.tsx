@@ -4,7 +4,7 @@ import Layout from "@/components/layout/Layout";
 import HeroSection from "@/components/home/HeroSection";
 import FeaturedCourses from "@/components/home/FeaturedCourses";
 import Categories from "@/components/home/Categories";
-import CustomFeatures from "@/components/home/CustomFeatures"; // Using custom component
+import CustomFeatures from "@/components/home/CustomFeatures";
 import Stats from "@/components/home/Stats";
 import TestimonialSection from "@/components/home/TestimonialSection";
 import CallToAction from "@/components/home/CallToAction";
@@ -15,7 +15,7 @@ const Index: React.FC = () => {
       <HeroSection />
       <FeaturedCourses />
       <Categories />
-      <CustomFeatures /> {/* Using custom component */}
+      <CustomFeatures />
       <Stats />
       <TestimonialSection />
       <CallToAction />

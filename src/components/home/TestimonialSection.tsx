@@ -17,39 +17,39 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Emma Watson",
-    role: "Software Developer",
+    name: "Hà Minh Tâm",
+    role: "Lập Trình Viên",
     avatar: "https://randomuser.me/api/portraits/women/44.jpg",
     quote:
-      "The web development course completely transformed my career. The structured curriculum and hands-on projects gave me the skills and confidence to land my dream job. I can't recommend EduHub enough!",
-    course: "Advanced Web Development with React",
+      "Khóa học phát triển web đã hoàn toàn thay đổi sự nghiệp của tôi. Chương trình học có cấu trúc và các dự án thực hành đã cung cấp cho tôi kỹ năng và sự tự tin để có được công việc mơ ước. Tôi không thể giới thiệu EduHub đủ nhiều!",
+    course: "Phát Triển Web Nâng Cao với React",
   },
   {
     id: 2,
-    name: "David Chen",
-    role: "Data Scientist",
+    name: "Nguyễn Đức Huy",
+    role: "Chuyên Gia Phân Tích Dữ Liệu",
     avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     quote:
-      "As someone transitioning to data science, I found the course materials incredibly comprehensive yet accessible. The instructor support was outstanding, and I was able to apply what I learned immediately in my work.",
-    course: "Data Science Fundamentals: Machine Learning",
+      "Với vai trò là người đang chuyển sang khoa học dữ liệu, tôi thấy các tài liệu khóa học vô cùng toàn diện nhưng dễ tiếp cận. Sự hỗ trợ từ giảng viên thật xuất sắc, và tôi có thể áp dụng ngay những gì học được vào công việc.",
+    course: "Nền Tảng Khoa Học Dữ Liệu: Học Máy",
   },
   {
     id: 3,
-    name: "Sophia Rodriguez",
-    role: "UX Designer",
+    name: "Lê Thị Ánh Ngọc",
+    role: "Nhà Thiết Kế UX",
     avatar: "https://randomuser.me/api/portraits/women/68.jpg",
     quote:
-      "The UI/UX course helped me transform my design thinking. The practical examples and feedback from instructors elevated my skills. I've received multiple job offers after showcasing my portfolio projects from this course.",
-    course: "UI/UX Design Principles and Best Practices",
+      "Khóa học UI/UX đã giúp tôi thay đổi cách tư duy thiết kế. Ví dụ thực tế và phản hồi từ các giảng viên đã nâng cao kỹ năng của tôi. Tôi đã nhận được nhiều lời mời làm việc sau khi trình bày các dự án trong danh mục đầu tư từ khóa học này.",
+    course: "Nguyên Tắc Thiết Kế UI/UX và Thực Hành Tốt Nhất",
   },
   {
     id: 4,
-    name: "Marcus Johnson",
-    role: "Marketing Director",
+    name: "Trần Văn Minh",
+    role: "Giám Đốc Marketing",
     avatar: "https://randomuser.me/api/portraits/men/22.jpg",
     quote:
-      "The business leadership course provided valuable insights that I could implement immediately in my organization. The case studies were relevant, and the networking opportunities were invaluable for my professional growth.",
-    course: "Business Leadership and Management",
+      "Khóa học lãnh đạo doanh nghiệp đã cung cấp những hiểu biết có giá trị mà tôi có thể áp dụng ngay vào tổ chức của mình. Các nghiên cứu tình huống rất phù hợp, và cơ hội kết nối là vô giá cho sự phát triển nghề nghiệp của tôi.",
+    course: "Lãnh Đạo Kinh Doanh và Quản Lý",
   },
 ];
 
@@ -86,8 +86,8 @@ const TestimonialSection: React.FC = () => {
     <section className="section-padding bg-gradient-to-b from-background to-muted/30">
       <div className="page-container">
         <SectionHeading
-          title="What Our Students Say"
-          subtitle="Hear from our community of learners"
+          title="Học Viên Nói Gì"
+          subtitle="Lắng nghe từ cộng đồng người học của chúng tôi"
         />
 
         <div className="relative max-w-4xl mx-auto px-6">
@@ -170,7 +170,7 @@ const TestimonialSection: React.FC = () => {
                     setCurrentIndex(index);
                   }
                 }}
-                aria-label={`Go to testimonial ${index + 1}`}
+                aria-label={`Chuyển tới lời chứng thực ${index + 1}`}
               />
             ))}
           </div>

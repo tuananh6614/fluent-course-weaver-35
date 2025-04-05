@@ -17,9 +17,8 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-sm text-primary-foreground/80 max-w-xs">
-              EduHub is a modern learning platform where knowledge meets
-              innovation, providing high-quality educational content to learners
-              worldwide.
+              EduHub là nền tảng học tập hiện đại nơi kiến thức gặp đổi mới,
+              cung cấp nội dung giáo dục chất lượng cao cho người học trên toàn thế giới.
             </p>
             <div className="flex space-x-4">
               <a
@@ -55,13 +54,13 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-heading font-semibold text-lg mb-4">Quick Links</h3>
+            <h3 className="font-heading font-semibold text-lg mb-4">Liên Kết Nhanh</h3>
             <ul className="space-y-2">
-              {["Courses", "About Us", "Contact", "FAQ", "Privacy Policy", "Terms of Service"].map(
-                (link) => (
-                  <li key={link}>
+              {["Khóa Học", "Giới Thiệu", "Liên Hệ", "Câu Hỏi Thường Gặp", "Chính Sách Bảo Mật", "Điều Khoản Dịch Vụ"].map(
+                (link, index) => (
+                  <li key={index}>
                     <Link
-                      to={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+                      to={`/${link === "Khóa Học" ? "courses" : link === "Giới Thiệu" ? "about" : link === "Liên Hệ" ? "contact" : link.toLowerCase().replace(/\s+/g, "-")}`}
                       className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                     >
                       {link}
@@ -74,17 +73,17 @@ const Footer = () => {
 
           {/* Categories */}
           <div>
-            <h3 className="font-heading font-semibold text-lg mb-4">Categories</h3>
+            <h3 className="font-heading font-semibold text-lg mb-4">Danh Mục</h3>
             <ul className="space-y-2">
               {[
-                "Programming",
-                "Data Science",
-                "Business",
-                "Design",
+                "Lập Trình",
+                "Khoa Học Dữ Liệu",
+                "Kinh Doanh",
+                "Thiết Kế",
                 "Marketing",
-                "Personal Development",
-              ].map((category) => (
-                <li key={category}>
+                "Phát Triển Cá Nhân",
+              ].map((category, index) => (
+                <li key={index}>
                   <Link
                     to={`/courses/category/${category.toLowerCase().replace(/\s+/g, "-")}`}
                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -98,12 +97,12 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="font-heading font-semibold text-lg mb-4">Contact Us</h3>
+            <h3 className="font-heading font-semibold text-lg mb-4">Liên Hệ Với Chúng Tôi</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 shrink-0 mt-0.5" />
                 <span className="text-primary-foreground/80">
-                  123 Education St., Knowledge City, 10001
+                  123 Đường Giáo Dục, TP Tri Thức, 10001
                 </span>
               </li>
               <li className="flex items-center">
@@ -112,7 +111,7 @@ const Footer = () => {
                   href="tel:+11234567890"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
-                  +1 (123) 456-7890
+                  +84 (123) 456-7890
                 </a>
               </li>
               <li className="flex items-center">
@@ -129,16 +128,16 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-primary-foreground/20 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-primary-foreground/70">
-          <p>© {new Date().getFullYear()} EduHub. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} EduHub. Mọi quyền được bảo lưu.</p>
           <div className="mt-4 md:mt-0 space-x-4">
             <a href="#" className="hover:text-primary-foreground transition-colors">
-              Privacy Policy
+              Chính Sách Bảo Mật
             </a>
             <a href="#" className="hover:text-primary-foreground transition-colors">
-              Terms of Service
+              Điều Khoản Dịch Vụ
             </a>
             <a href="#" className="hover:text-primary-foreground transition-colors">
-              Cookies Policy
+              Chính Sách Cookie
             </a>
           </div>
         </div>

@@ -46,19 +46,19 @@ const Navbar = () => {
               to="/courses"
               className="px-4 py-2 text-foreground/80 hover:text-foreground transition-colors"
             >
-              Courses
+              Khóa Học
             </Link>
             <Link
               to="/about"
               className="px-4 py-2 text-foreground/80 hover:text-foreground transition-colors"
             >
-              About
+              Giới Thiệu
             </Link>
             <Link
               to="/contact"
               className="px-4 py-2 text-foreground/80 hover:text-foreground transition-colors"
             >
-              Contact
+              Liên Hệ
             </Link>
           </nav>
 
@@ -66,13 +66,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Button size="sm" variant="ghost">
               <Search className="h-5 w-5 mr-2" />
-              Search
+              Tìm Kiếm
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link to="/login">Log In</Link>
+              <Link to="/login">Đăng Nhập</Link>
             </Button>
             <Button size="sm" asChild>
-              <Link to="/register">Sign Up</Link>
+              <Link to="/register">Đăng Ký</Link>
             </Button>
           </div>
 
@@ -103,33 +103,33 @@ const Navbar = () => {
                   className="px-4 py-2 hover:bg-muted rounded-md transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Courses
+                  Khóa Học
                 </Link>
                 <Link
                   to="/about"
                   className="px-4 py-2 hover:bg-muted rounded-md transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  About
+                  Giới Thiệu
                 </Link>
                 <Link
                   to="/contact"
                   className="px-4 py-2 hover:bg-muted rounded-md transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Contact
+                  Liên Hệ
                 </Link>
               </nav>
               <div className="flex flex-col space-y-2">
                 <Button size="sm" variant="outline" className="justify-start" asChild>
                   <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <User className="h-4 w-4 mr-2" />
-                    Log In
+                    Đăng Nhập
                   </Link>
                 </Button>
                 <Button size="sm" className="justify-start" asChild>
                   <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    Sign Up
+                    Đăng Ký
                   </Link>
                 </Button>
               </div>

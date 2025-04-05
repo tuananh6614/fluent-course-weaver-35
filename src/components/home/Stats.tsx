@@ -26,22 +26,22 @@ const Stats: React.FC = () => {
           <StatItem
             icon={<Users className="h-8 w-8" />}
             value="50K+"
-            label="Active Students"
+            label="Học Viên Tích Cực"
           />
           <StatItem
             icon={<BookOpen className="h-8 w-8" />}
             value="500+"
-            label="Quality Courses"
+            label="Khóa Học Chất Lượng"
           />
           <StatItem
             icon={<GraduationCap className="h-8 w-8" />}
             value="200+"
-            label="Expert Instructors"
+            label="Giảng Viên Chuyên Gia"
           />
           <StatItem
             icon={<Award className="h-8 w-8" />}
             value="15K+"
-            label="Certifications"
+            label="Chứng Chỉ Đã Cấp"
           />
         </div>
       </div>
