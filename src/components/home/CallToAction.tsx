@@ -18,22 +18,22 @@ const CallToAction: React.FC = () => {
       <div className="page-container relative z-10">
         <div className="max-w-3xl mx-auto text-center text-primary-foreground">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-6">
-            Ready to Start Your Learning Journey?
+            Sẵn Sàng Bắt Đầu Hành Trình Học Tập?
           </h2>
           <p className="text-xl mb-10 text-primary-foreground/90">
-            Join thousands of students and transform your skills with our extensive curriculum and expert instructors.
+            Tham gia cùng hàng nghìn học viên và nâng cao kỹ năng của bạn với chương trình giảng dạy toàn diện và đội ngũ giảng viên chuyên nghiệp.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" variant="secondary" className="gap-2" asChild>
               <Link to="/courses">
                 <BookOpen className="h-5 w-5" />
-                Explore Courses
+                Khám Phá Khóa Học
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-primary gap-2" asChild>
               <Link to="/register">
-                Get Started
+                Bắt Đầu Ngay
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
