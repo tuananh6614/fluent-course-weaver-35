@@ -51,9 +51,9 @@ const FallingLeaves: React.FC = () => {
       y: Math.random() * -height,
       size: Math.random() * 10 + 10, // 10-20px
       rotation: Math.random() * 360,
-      speed: Math.random() * 1 + 0.5, // 0.5-1.5
-      swingSpeed: Math.random() * 0.02 + 0.01,
-      swingAmount: Math.random() * 100 + 50,
+      speed: Math.random() * 0.5 + 0.2, // Reduced speed: 0.2-0.7 (was 0.5-1.5)
+      swingSpeed: Math.random() * 0.01 + 0.005, // Reduced swing speed: 0.005-0.015 (was 0.01-0.03)
+      swingAmount: Math.random() * 80 + 40, // Reduced swing amount: 40-120 (was 50-150)
       swingPosition: Math.random() * Math.PI * 2,
     };
   };
@@ -88,7 +88,7 @@ const FallingLeaves: React.FC = () => {
           y: newY,
           x: newX,
           swingPosition: newSwingPosition,
-          rotation: leaf.rotation + 0.2,
+          rotation: leaf.rotation + 0.1, // Reduced rotation speed (was 0.2)
         };
       });
     });
@@ -108,7 +108,7 @@ const FallingLeaves: React.FC = () => {
             width: `${leaf.size}px`,
             height: `${leaf.size}px`,
             transform: `rotate(${leaf.rotation}deg)`,
-            transition: "transform 0.1s linear",
+            transition: "transform 0.2s linear", // Slower transition (was 0.1s)
           }}
         >
           <svg
