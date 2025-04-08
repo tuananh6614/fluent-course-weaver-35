@@ -41,22 +41,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-heading">
-          {type === "login" ? "Welcome back" : "Create an account"}
+          {type === "login" ? "Chào mừng trở lại" : "Tạo tài khoản mới"}
         </CardTitle>
         <CardDescription>
           {type === "login"
-            ? "Enter your credentials to access your account"
-            : "Enter your information to create an account"}
+            ? "Nhập thông tin đăng nhập của bạn"
+            : "Nhập thông tin để tạo tài khoản mới"}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {type === "register" && (
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Họ và tên</Label>
               <Input
                 id="name"
-                placeholder="Enter your name"
+                placeholder="Nhập họ và tên của bạn"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -70,7 +70,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập email của bạn"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
@@ -82,13 +82,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               {type === "login" && (
                 <Link
                   to="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
-                  Forgot password?
+                  Quên mật khẩu?
                 </Link>
               )}
             </div>
@@ -96,7 +96,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                placeholder="Nhập mật khẩu của bạn"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
@@ -117,7 +117,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                   <EyeIcon className="h-4 w-4" />
                 )}
                 <span className="sr-only">
-                  {showPassword ? "Hide password" : "Show password"}
+                  {showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 </span>
               </Button>
             </div>
@@ -126,13 +126,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             <div className="flex items-center space-x-2">
               <Checkbox id="terms" />
               <Label htmlFor="terms" className="text-sm">
-                I agree to the{" "}
+                Tôi đồng ý với{" "}
                 <Link to="/terms" className="text-primary hover:underline">
-                  Terms of Service
+                  Điều khoản dịch vụ
                 </Link>{" "}
-                and{" "}
+                và{" "}
                 <Link to="/privacy" className="text-primary hover:underline">
-                  Privacy Policy
+                  Chính sách bảo mật
                 </Link>
               </Label>
             </div>
@@ -147,21 +147,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             {isLoading ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-r-transparent mr-2"></div>
-                {type === "login" ? "Logging in..." : "Creating account..."}
+                {type === "login" ? "Đang đăng nhập..." : "Đang tạo tài khoản..."}
               </div>
             ) : type === "login" ? (
-              "Log In"
+              "Đăng nhập"
             ) : (
-              "Create Account"
+              "Tạo tài khoản"
             )}
           </Button>
           <p className="text-center text-sm">
-            {type === "login" ? "Don't have an account? " : "Already have an account? "}
+            {type === "login" ? "Bạn chưa có tài khoản? " : "Bạn đã có tài khoản? "}
             <Link
               to={type === "login" ? "/register" : "/login"}
               className="text-primary hover:underline"
             >
-              {type === "login" ? "Sign up" : "Log in"}
+              {type === "login" ? "Đăng ký" : "Đăng nhập"}
             </Link>
           </p>
         </CardFooter>
