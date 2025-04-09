@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -14,27 +14,62 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EyeIcon, EyeOffIcon, Mail, KeyRound } from "lucide-react";
+import { authService } from "@/services/api";
+import { toast } from "sonner";
 
 interface AuthFormProps {
   type: "login" | "register";
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      console.log({ email, password, name });
+    try {
+      if (type === "login") {
+        const response = await authService.login(email, password);
+        // Store token in localStorage
+        localStorage.setItem('token', response.token);
+        
+        toast.success('Đăng nhập thành công', {
+          description: `Chào mừng ${response.user.full_name} quay trở lại!`,
+        });
+        
+        // Redirect based on user role
+        if (response.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } else {
+        // Registration
+        if (!agreeTerms) {
+          toast.error('Vui lòng đồng ý với điều khoản dịch vụ');
+          setIsLoading(false);
+          return;
+        }
+        
+        await authService.register(name, email, password);
+        toast.success('Đăng ký thành công', {
+          description: 'Vui lòng đăng nhập để tiếp tục.',
+        });
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      // Error is already handled by the API interceptor
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -124,7 +159,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           </div>
           {type === "register" && (
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" />
+              <Checkbox 
+                id="terms" 
+                checked={agreeTerms}
+                onCheckedChange={(checked) => setAgreeTerms(checked === true)}
+              />
               <Label htmlFor="terms" className="text-sm">
                 Tôi đồng ý với{" "}
                 <Link to="/terms" className="text-primary hover:underline">
