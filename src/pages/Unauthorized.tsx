@@ -15,16 +15,16 @@ const Unauthorized: React.FC = () => {
           <div className="bg-red-100 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="h-8 w-8 text-red-600" />
           </div>
-          <h1 className="text-3xl font-bold mb-4">Quyền truy cập bị từ chối</h1>
+          <h1 className="text-3xl font-bold mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-8">
-            Bạn không có quyền truy cập vào trang này. Vui lòng liên hệ với quản trị viên nếu bạn cho rằng đây là lỗi.
+            You don't have permission to access this page. Please contact an administrator if you believe this is an error.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button onClick={() => navigate(-1)} variant="outline">
-              Quay lại trang trước
+              Go Back
             </Button>
             <Button onClick={() => navigate("/")}>
-              Về trang chủ
+              Home Page
             </Button>
           </div>
         </div>
