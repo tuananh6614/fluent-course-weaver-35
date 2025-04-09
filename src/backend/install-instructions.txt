@@ -1,0 +1,50 @@
+
+# How to Install and Run the Backend
+
+Since we cannot modify package.json in the main project, you need to install the backend dependencies separately.
+
+## Installation Steps
+
+1. Open a terminal and navigate to the backend directory:
+   ```bash
+   cd src/backend
+   ```
+
+2. Install the backend dependencies manually:
+   ```bash
+   npm install express cors mysql2 bcryptjs jsonwebtoken dotenv
+   npm install nodemon --save-dev
+   ```
+
+3. Create the MySQL database:
+   - Open XAMPP Control Panel and start MySQL
+   - Open phpMyAdmin (http://localhost/phpmyadmin)
+   - Create a new database called "eduhub"
+   - Import the database schema from `database.sql`
+
+4. Set up environment variables:
+   - Copy .env.example to .env:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit the .env file to match your MySQL configuration
+
+5. Start the backend server:
+   ```bash
+   npm start
+   ```
+   Or for development with auto-reload:
+   ```bash
+   npx nodemon server.js
+   ```
+
+6. The backend server will start on port 5000 (or the port you specified in .env)
+   You can test it by accessing: http://localhost:5000/api/courses
+
+## Connecting Frontend to Backend
+
+To connect your React frontend with this backend:
+
+1. Create an API service file in your frontend src directory
+2. Use the base URL: http://localhost:5000/api
+3. Make sure CORS is enabled (already configured in the backend)
