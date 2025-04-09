@@ -19,7 +19,6 @@ import ManageCourses from "./pages/admin/ManageCourses";
 import ManageUsers from "./pages/admin/ManageUsers";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
-import CategoryCourses from "./pages/CategoryCourses";
 import Certificate from "./pages/Certificate";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -36,7 +35,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetail />} />
-          <Route path="/courses/category/:slug" element={<CategoryCourses />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

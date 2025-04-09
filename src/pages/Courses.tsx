@@ -3,29 +3,13 @@ import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/common/SectionHeading";
 import CourseCard from "@/components/courses/CourseCard";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Slider, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Checkbox } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { Search, Filter } from "lucide-react";
-
-// Danh mục khóa học
-const categories = [
-  "Tất Cả Danh Mục",
-  "Lập Trình",
-  "Khoa Học Dữ Liệu",
-  "Thiết Kế",
-  "Kinh Doanh",
-  "Marketing",
-  "Tài Chính",
-  "Nhiếp Ảnh",
-  "Ngoại Ngữ",
-  "Phát Triển Cá Nhân",
-];
 
 const Courses: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Tất Cả Danh Mục");
   const [sortBy, setSortBy] = useState("popular");
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
 
@@ -36,9 +20,8 @@ const Courses: React.FC = () => {
   const filteredCourses = coursesData.filter((course) => {
     const matchesSearch = course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         course?.instructor?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Tất Cả Danh Mục" || course?.category === selectedCategory;
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   // Sắp xếp khóa học
@@ -81,93 +64,35 @@ const Courses: React.FC = () => {
 
       <section className="py-12">
         <div className="page-container">
-          <div className="lg:grid lg:grid-cols-4 gap-8">
+          <div className="space-y-6">
             {/* Mobile Filters Toggle Button */}
-            <div className="flex justify-between items-center mb-4 lg:hidden">
+            <div className="flex justify-between items-center mb-4">
               <p className="text-lg font-medium">
                 Hiển thị {sortedCourses.length} kết quả
               </p>
-              <Button
-                variant="outline"
-                onClick={() => setMobileFiltersVisible(!mobileFiltersVisible)}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Bộ Lọc
-              </Button>
-            </div>
-
-            {/* Filters - Desktop & Mobile */}
-            <div className={`lg:block ${mobileFiltersVisible ? 'block' : 'hidden'} mb-6 lg:mb-0`}>
-              <div className="bg-card rounded-lg border p-5 sticky top-20 space-y-6">
-                <div>
-                  <h3 className="font-medium mb-3">Danh Mục</h3>
-                  <div className="space-y-2">
-                    {categories.map((category) => (
-                      <div key={category} className="flex items-center">
-                        <button
-                          className={`text-sm hover:text-primary transition-colors ${
-                            selectedCategory === category
-                              ? "text-primary font-medium"
-                              : ""
-                          }`}
-                          onClick={() => setSelectedCategory(category)}
-                        >
-                          {category}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-3">Sắp Xếp Theo</h3>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popular">Phổ Biến Nhất</SelectItem>
-                      <SelectItem value="newest">Mới Nhất</SelectItem>
-                      <SelectItem value="rating">Đánh Giá Cao Nhất</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button variant="outline" className="w-full lg:hidden" onClick={() => setMobileFiltersVisible(false)}>
-                  Áp Dụng Bộ Lọc
-                </Button>
-              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="popular">Phổ Biến Nhất</SelectItem>
+                  <SelectItem value="newest">Mới Nhất</SelectItem>
+                  <SelectItem value="rating">Đánh Giá Cao Nhất</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Course Grid */}
-            <div className="lg:col-span-3">
-              <div className="flex justify-between items-center mb-6">
-                <p className="text-lg">
-                  Hiển thị <span className="font-medium">{sortedCourses.length}</span> kết quả
-                </p>
-                <div className="hidden lg:block">
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popular">Phổ Biến Nhất</SelectItem>
-                      <SelectItem value="newest">Mới Nhất</SelectItem>
-                      <SelectItem value="rating">Đánh Giá Cao Nhất</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+            <div>
               {sortedCourses.length === 0 ? (
                 <div className="text-center py-12">
                   <h3 className="text-2xl font-medium mb-2">Không tìm thấy khóa học</h3>
                   <p className="text-muted-foreground">
-                    Vui lòng điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc của bạn
+                    Vui lòng điều chỉnh tiêu chí tìm kiếm của bạn
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedCourses.map((course, index) => (
                     <div 
                       key={course.id}

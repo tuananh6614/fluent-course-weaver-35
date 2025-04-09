@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="page-container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand and Description */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
@@ -68,30 +68,6 @@ const Footer = () => {
                   </li>
                 )
               )}
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="font-heading font-semibold text-lg mb-4">Danh Mục</h3>
-            <ul className="space-y-2">
-              {[
-                "Lập Trình",
-                "Khoa Học Dữ Liệu",
-                "Kinh Doanh",
-                "Thiết Kế",
-                "Marketing",
-                "Phát Triển Cá Nhân",
-              ].map((category, index) => (
-                <li key={index}>
-                  <Link
-                    to={`/courses/category/${category.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                  >
-                    {category}
-                  </Link>
-                </li>
-              ))}
             </ul>
           </div>
 
