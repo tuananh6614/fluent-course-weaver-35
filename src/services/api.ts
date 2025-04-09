@@ -59,6 +59,16 @@ export const authService = {
     const response = await api.get('/users/profile');
     return response.data;
   },
+
+  updateProfile: async (data: { full_name: string }) => {
+    const response = await api.put('/users/profile', data);
+    return response.data;
+  },
+
+  changePassword: async (data: { currentPassword: string, newPassword: string }) => {
+    const response = await api.put('/users/change-password', data);
+    return response.data;
+  },
 };
 
 // Course services
@@ -87,9 +97,50 @@ export const courseService = {
     const response = await api.get(`/chapters/${chapterId}/lessons`);
     return response.data;
   },
-  
+
+  getLesson: async (lessonId: string | number) => {
+    const response = await api.get(`/lessons/${lessonId}`);
+    return response.data;
+  },
+
+  updateProgress: async (courseId: string | number, data: { progress_percent: number, current_lesson_id?: number }) => {
+    const response = await api.put(`/enrollments/${courseId}/progress`, data);
+    return response.data;
+  },
+};
+
+// Certificate services
+export const certificateService = {
   getCertificate: async (id: string | number) => {
     const response = await api.get(`/certificates/${id}`);
+    return response.data;
+  },
+
+  generateCertificate: async (courseId: string | number) => {
+    const response = await api.post(`/certificates/generate/${courseId}`);
+    return response.data;
+  },
+
+  verifyCertificate: async (certificateNumber: string) => {
+    const response = await api.get(`/certificates/verify/${certificateNumber}`);
+    return response.data;
+  },
+};
+
+// Exam services
+export const examService = {
+  getCourseExams: async (courseId: string | number) => {
+    const response = await api.get(`/courses/${courseId}/exams`);
+    return response.data;
+  },
+
+  getExam: async (examId: string | number) => {
+    const response = await api.get(`/exams/${examId}`);
+    return response.data;
+  },
+
+  submitExam: async (examId: string | number, answers: Array<{question_id: number, selected_option: string}>) => {
+    const response = await api.post(`/exams/${examId}/submit`, { answers });
     return response.data;
   },
 };
