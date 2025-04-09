@@ -1,12 +1,16 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, BookOpen } from "lucide-react";
+import { Menu, X, User, BookOpen, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +26,36 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+
+    // Try to get user role from localStorage if available
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      try {
+        const userData = JSON.parse(storedUserData);
+        setUserRole(userData.role);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    setIsAuthenticated(false);
+    setUserRole(null);
+    
+    toast.success('Đăng xuất thành công', {
+      description: 'Bạn đã đăng xuất khỏi hệ thống.'
+    });
+    
+    navigate('/');
+  };
 
   return (
     <header
@@ -60,16 +94,38 @@ const Navbar = () => {
             >
               Liên Hệ
             </Link>
+            {userRole === 'admin' && (
+              <Link
+                to="/admin"
+                className="px-4 py-2 text-foreground/80 hover:text-foreground transition-colors"
+              >
+                Quản Trị
+              </Link>
+            )}
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/login">Đăng Nhập</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/register">Đăng Ký</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/profile">Tài khoản</Link>
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Đăng Xuất
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/login">Đăng Nhập</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/register">Đăng Ký</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -115,19 +171,53 @@ const Navbar = () => {
                 >
                   Liên Hệ
                 </Link>
+                {userRole === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="px-4 py-2 hover:bg-muted rounded-md transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Quản Trị
+                  </Link>
+                )}
               </nav>
               <div className="flex flex-col space-y-2">
-                <Button size="sm" variant="outline" className="justify-start" asChild>
-                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <User className="h-4 w-4 mr-2" />
-                    Đăng Nhập
-                  </Link>
-                </Button>
-                <Button size="sm" className="justify-start" asChild>
-                  <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    Đăng Ký
-                  </Link>
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <Button size="sm" variant="outline" className="justify-start" asChild>
+                      <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Tài khoản
+                      </Link>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="justify-start"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Đăng Xuất
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" className="justify-start" asChild>
+                      <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Đăng Nhập
+                      </Link>
+                    </Button>
+                    <Button size="sm" className="justify-start" asChild>
+                      <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                        Đăng Ký
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -39,6 +38,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         const response = await authService.login(email, password);
         // Store token in localStorage
         localStorage.setItem('token', response.token);
+        
+        // Store user data (except sensitive info)
+        const userData = {
+          id: response.user.user_id,
+          full_name: response.user.full_name,
+          email: response.user.email,
+          role: response.user.role,
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
         
         toast.success('Đăng nhập thành công', {
           description: `Chào mừng ${response.user.full_name} quay trở lại!`,

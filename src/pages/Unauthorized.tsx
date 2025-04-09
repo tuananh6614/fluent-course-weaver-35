@@ -19,11 +19,11 @@ const Unauthorized: React.FC = () => {
           <p className="text-gray-600 mb-8">
             Bạn không có quyền truy cập vào trang này. Vui lòng liên hệ với quản trị viên nếu bạn cho rằng đây là lỗi.
           </p>
-          <div className="space-y-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button onClick={() => navigate(-1)} variant="outline">
               Quay lại trang trước
             </Button>
-            <Button onClick={() => navigate("/")} className="ml-4">
+            <Button onClick={() => navigate("/")}>
               Về trang chủ
             </Button>
           </div>
