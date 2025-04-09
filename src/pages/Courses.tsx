@@ -1,22 +1,28 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/common/SectionHeading";
 import CourseCard from "@/components/courses/CourseCard";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { courseService } from "@/services/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Courses: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
-  const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
 
-  // Sẽ được lấy từ API sau này
-  const coursesData: any[] = [];
+  // Fetch courses data
+  const { data: coursesResponse, isLoading, error } = useQuery({
+    queryKey: ['courses'],
+    queryFn: courseService.getAllCourses,
+  });
 
-  // Các khóa học đã được lọc
+  const coursesData = coursesResponse?.data || [];
+
+  // Filtered courses based on search
   const filteredCourses = coursesData.filter((course) => {
     const matchesSearch = course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         course?.instructor?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -24,18 +30,36 @@ const Courses: React.FC = () => {
     return matchesSearch;
   });
 
-  // Sắp xếp khóa học
+  // Sort courses based on selected option
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     if (sortBy === "popular") {
-      return b.students - a.students;
+      return (b.students || 0) - (a.students || 0);
     } else if (sortBy === "newest") {
-      // Trong ứng dụng thực tế, chúng ta sẽ sử dụng ngày tạo khóa học
-      return 0;
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     } else if (sortBy === "rating") {
-      return b.rating - a.rating;
+      return (b.rating || 0) - (a.rating || 0);
     }
     return 0;
   });
+
+  // Skeleton loader for courses
+  const CourseSkeletons = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {Array(8).fill(0).map((_, index) => (
+        <div key={index} className="animate-pulse">
+          <div className="aspect-video bg-muted rounded-t-md"></div>
+          <div className="p-4 space-y-2">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="flex justify-between pt-2">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-4 w-1/4" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <Layout>
@@ -65,10 +89,13 @@ const Courses: React.FC = () => {
       <section className="py-12">
         <div className="page-container">
           <div className="space-y-6">
-            {/* Mobile Filters Toggle Button */}
+            {/* Sort Controls */}
             <div className="flex justify-between items-center mb-4">
               <p className="text-lg font-medium">
-                Hiển thị {sortedCourses.length} kết quả
+                {isLoading 
+                  ? "Đang tải khóa học..." 
+                  : `Hiển thị ${sortedCourses.length} kết quả`
+                }
               </p>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[180px]">
@@ -84,7 +111,16 @@ const Courses: React.FC = () => {
 
             {/* Course Grid */}
             <div>
-              {sortedCourses.length === 0 ? (
+              {isLoading ? (
+                <CourseSkeletons />
+              ) : error ? (
+                <div className="text-center py-12">
+                  <h3 className="text-2xl font-medium mb-2">Không thể tải khóa học</h3>
+                  <p className="text-muted-foreground">
+                    Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.
+                  </p>
+                </div>
+              ) : sortedCourses.length === 0 ? (
                 <div className="text-center py-12">
                   <h3 className="text-2xl font-medium mb-2">Không tìm thấy khóa học</h3>
                   <p className="text-muted-foreground">
@@ -95,11 +131,21 @@ const Courses: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedCourses.map((course, index) => (
                     <div 
-                      key={course.id}
+                      key={course.course_id}
                       className="animate-fade-in"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <CourseCard {...course} />
+                      <CourseCard 
+                        id={course.course_id}
+                        title={course.title || "Khóa học"}
+                        instructor={course.instructor || "Giảng viên"}
+                        thumbnail={course.thumbnail || "https://placehold.co/800x450"}
+                        category={course.category || "General"}
+                        rating={course.rating || 0}
+                        students={course.students || 0}
+                        duration={course.duration || "0 giờ"}
+                        price={course.price || 0}
+                      />
                     </div>
                   ))}
                 </div>

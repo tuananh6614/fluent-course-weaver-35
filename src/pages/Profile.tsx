@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,113 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { User, BookOpen, BookMarked, Award, Settings } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { authService, courseService } from "@/services/api";
+import { toast } from "sonner";
 
 const Profile: React.FC = () => {
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    bio: ''
+  });
+
+  // Fetch user profile
+  const { data: userData, isLoading, error } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: authService.getProfile,
+  });
+
+  // Fetch enrolled courses
+  const { data: enrolledCoursesData } = useQuery({
+    queryKey: ['enrolledCourses'],
+    queryFn: courseService.getEnrolledCourses,
+    enabled: !!userData, // Only fetch when user data is available
+  });
+  
+  const enrolledCourses = enrolledCoursesData?.data || [];
+
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: (data) => authService.updateProfile(data),
+    onSuccess: () => {
+      toast.success("Thông tin đã được cập nhật");
+    },
+    onError: (error) => {
+      toast.error("Lỗi cập nhật thông tin", { 
+        description: error.response?.data?.message || "Vui lòng thử lại"
+      });
+    }
+  });
+
+  // Update form data when user data is loaded
+  useEffect(() => {
+    if (userData?.data) {
+      setFormData({
+        full_name: userData.data.full_name || '',
+        email: userData.data.email || '',
+        phone: userData.data.phone || '',
+        bio: userData.data.bio || ''
+      });
+    }
+  }, [userData]);
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateProfileMutation.mutate({
+      full_name: formData.full_name
+    });
+  };
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="py-12 px-4 md:py-16 page-container">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <p>Đang tải thông tin...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="py-12 px-4 md:py-16 page-container">
+          <div className="flex flex-col justify-center items-center min-h-[400px]">
+            <p className="text-red-500 mb-4">Không thể tải thông tin người dùng</p>
+            <Button onClick={() => window.location.reload()}>Thử lại</Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (!formData.full_name) return "U";
+    return formData.full_name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
     <Layout>
       <section className="py-12 px-4 md:py-16">
@@ -22,13 +127,13 @@ const Profile: React.FC = () => {
                 <CardContent className="p-6">
                   <div className="flex flex-col items-center text-center mb-6">
                     <Avatar className="h-24 w-24 mb-4">
-                      <AvatarImage src="https://github.com/shadcn.png" alt="Ảnh đại diện" />
+                      <AvatarImage src={userData?.data?.avatar_url} alt="Ảnh đại diện" />
                       <AvatarFallback>
-                        <User className="h-12 w-12" />
+                        {getInitials()}
                       </AvatarFallback>
                     </Avatar>
-                    <h2 className="text-xl font-bold">Nguyễn Văn A</h2>
-                    <p className="text-sm text-muted-foreground mt-1">user@example.com</p>
+                    <h2 className="text-xl font-bold">{formData.full_name}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{formData.email}</p>
                   </div>
                   
                   <nav className="space-y-1">
@@ -87,26 +192,34 @@ const Profile: React.FC = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-6">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Họ</Label>
-                            <Input id="firstName" placeholder="Nguyễn" defaultValue="Nguyễn" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Tên</Label>
-                            <Input id="lastName" placeholder="Văn A" defaultValue="Văn A" />
-                          </div>
+                      <form className="grid gap-6" onSubmit={handleSubmit}>
+                        <div className="space-y-2">
+                          <Label htmlFor="full_name">Họ và tên</Label>
+                          <Input 
+                            id="full_name" 
+                            placeholder="Họ và tên"
+                            value={formData.full_name}
+                            onChange={handleChange}
+                          />
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="email">Email</Label>
-                          <Input id="email" placeholder="user@example.com" defaultValue="user@example.com" disabled />
+                          <Input 
+                            id="email" 
+                            value={formData.email} 
+                            disabled 
+                          />
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="phone">Số điện thoại</Label>
-                          <Input id="phone" placeholder="0123456789" />
+                          <Input 
+                            id="phone" 
+                            placeholder="0123456789"
+                            value={formData.phone}
+                            onChange={handleChange}
+                          />
                         </div>
                         
                         <div className="space-y-2">
@@ -115,14 +228,21 @@ const Profile: React.FC = () => {
                             id="bio" 
                             className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Giới thiệu ngắn về bản thân bạn..."
-                            defaultValue="Tôi là một học viên đam mê học tập và phát triển bản thân."
+                            value={formData.bio}
+                            onChange={handleChange}
                           />
                         </div>
-                      </div>
+                      
+                        <div className="flex justify-end">
+                          <Button 
+                            type="submit"
+                            disabled={updateProfileMutation.isPending}
+                          >
+                            {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu Thay Đổi'}
+                          </Button>
+                        </div>
+                      </form>
                     </CardContent>
-                    <CardFooter className="flex justify-end">
-                      <Button>Lưu Thay Đổi</Button>
-                    </CardFooter>
                   </Card>
                 </TabsContent>
 
@@ -136,12 +256,32 @@ const Profile: React.FC = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-12">
-                        <p className="text-muted-foreground">Bạn chưa đăng ký khóa học nào.</p>
-                        <Button className="mt-4" asChild>
-                          <a href="/courses">Khám Phá Khóa Học</a>
-                        </Button>
-                      </div>
+                      {enrolledCourses.length > 0 ? (
+                        <div className="grid gap-4">
+                          {enrolledCourses.map((enrollment) => (
+                            <div key={enrollment.enrollment_id} className="flex items-center justify-between p-4 border rounded-md">
+                              <div>
+                                <h3 className="font-medium">{enrollment.course?.title || "Khóa học"}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {enrollment.progress_percent}% hoàn thành
+                                </p>
+                              </div>
+                              <Button asChild variant="outline">
+                                <a href={`/courses/${enrollment.course_id}`}>
+                                  Tiếp tục
+                                </a>
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <p className="text-muted-foreground">Bạn chưa đăng ký khóa học nào.</p>
+                          <Button className="mt-4" asChild>
+                            <a href="/courses">Khám Phá Khóa Học</a>
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
