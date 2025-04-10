@@ -8,10 +8,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, BookOpen, BookMarked, Award, Settings } from "lucide-react";
+import { User, BookOpen, BookMarked, Award, Settings, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { authService, courseService } from "@/services/api";
 import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define the proper type for profile data
 interface ProfileData {
@@ -28,12 +39,46 @@ interface UpdateProfileParams {
   bio?: string;
 }
 
+// Schema for password change form
+const passwordSchema = z.object({
+  currentPassword: z.string().min(6, {
+    message: "Mật khẩu hiện tại phải có ít nhất 6 ký tự",
+  }),
+  newPassword: z.string().min(6, {
+    message: "Mật khẩu mới phải có ít nhất 6 ký tự",
+  }),
+  confirmPassword: z.string().min(6, {
+    message: "Xác nhận mật khẩu phải có ít nhất 6 ký tự",
+  }),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "Mật khẩu xác nhận không khớp với mật khẩu mới",
+});
+
+type PasswordFormValues = z.infer<typeof passwordSchema>;
+
 const Profile: React.FC = () => {
   const [formData, setFormData] = useState<ProfileData>({
     full_name: '',
     email: '',
     phone: '',
     bio: ''
+  });
+
+  const [showPassword, setShowPassword] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+
+  // Password change form
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
   // Fetch user profile
@@ -59,6 +104,21 @@ const Profile: React.FC = () => {
     },
     onError: (error: any) => { // Use any for now to handle different error shapes
       toast.error("Lỗi cập nhật thông tin", { 
+        description: error.response?.data?.message || "Vui lòng thử lại"
+      });
+    }
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: (data: { currentPassword: string, newPassword: string }) => 
+      authService.changePassword(data),
+    onSuccess: () => {
+      toast.success("Mật khẩu đã được thay đổi thành công");
+      passwordForm.reset();
+    },
+    onError: (error: any) => {
+      toast.error("Lỗi thay đổi mật khẩu", { 
         description: error.response?.data?.message || "Vui lòng thử lại"
       });
     }
@@ -93,6 +153,22 @@ const Profile: React.FC = () => {
       phone: formData.phone,
       bio: formData.bio
     });
+  };
+
+  // Handle password form submission
+  const onPasswordSubmit = (data: PasswordFormValues) => {
+    changePasswordMutation.mutate({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword
+    });
+  };
+
+  // Toggle password visibility
+  const togglePasswordVisibility = (field: 'currentPassword' | 'newPassword' | 'confirmPassword') => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   // Handle loading state
@@ -161,6 +237,12 @@ const Profile: React.FC = () => {
                       </a>
                     </Button>
                     <Button variant="ghost" className="w-full justify-start" asChild>
+                      <a href="#security">
+                        <Lock className="mr-2 h-4 w-4" />
+                        Bảo Mật
+                      </a>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" asChild>
                       <a href="#courses">
                         <BookOpen className="mr-2 h-4 w-4" />
                         Khóa Học Của Tôi
@@ -195,6 +277,7 @@ const Profile: React.FC = () => {
               <Tabs defaultValue="profile">
                 <TabsList className="mb-8">
                   <TabsTrigger value="profile">Thông Tin Cá Nhân</TabsTrigger>
+                  <TabsTrigger value="security">Bảo Mật</TabsTrigger>
                   <TabsTrigger value="courses">Khóa Học</TabsTrigger>
                   <TabsTrigger value="certificates">Chứng Chỉ</TabsTrigger>
                 </TabsList>
@@ -259,6 +342,119 @@ const Profile: React.FC = () => {
                           </Button>
                         </div>
                       </form>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Security Tab */}
+                <TabsContent value="security">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Bảo Mật</CardTitle>
+                      <CardDescription>
+                        Quản lý cài đặt bảo mật và mật khẩu của bạn
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...passwordForm}>
+                        <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                          <FormField
+                            control={passwordForm.control}
+                            name="currentPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Mật khẩu hiện tại</FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input
+                                      type={showPassword.currentPassword ? "text" : "password"}
+                                      placeholder="Nhập mật khẩu hiện tại"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-0 top-0 h-full px-3"
+                                    onClick={() => togglePasswordVisibility('currentPassword')}
+                                  >
+                                    {showPassword.currentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </Button>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={passwordForm.control}
+                            name="newPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Mật khẩu mới</FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input
+                                      type={showPassword.newPassword ? "text" : "password"}
+                                      placeholder="Nhập mật khẩu mới"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-0 top-0 h-full px-3"
+                                    onClick={() => togglePasswordVisibility('newPassword')}
+                                  >
+                                    {showPassword.newPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </Button>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={passwordForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Xác nhận mật khẩu</FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input
+                                      type={showPassword.confirmPassword ? "text" : "password"}
+                                      placeholder="Xác nhận mật khẩu mới"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-0 top-0 h-full px-3"
+                                    onClick={() => togglePasswordVisibility('confirmPassword')}
+                                  >
+                                    {showPassword.confirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </Button>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="flex justify-end">
+                            <Button 
+                              type="submit"
+                              disabled={changePasswordMutation.isPending}
+                            >
+                              {changePasswordMutation.isPending ? 'Đang xử lý...' : 'Thay Đổi Mật Khẩu'}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
                     </CardContent>
                   </Card>
                 </TabsContent>

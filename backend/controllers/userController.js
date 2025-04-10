@@ -22,7 +22,7 @@ exports.getProfile = async (req, res, next) => {
 // @access  Private
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { full_name } = req.body;
+    const { full_name, phone, bio } = req.body;
     const userId = req.user.user_id;
     
     if (!full_name) {
@@ -32,9 +32,10 @@ exports.updateProfile = async (req, res, next) => {
       });
     }
     
+    // Update query with additional fields
     const [result] = await db.query(
-      'UPDATE Users SET full_name = ? WHERE user_id = ?',
-      [full_name, userId]
+      'UPDATE Users SET full_name = ?, phone = ?, bio = ? WHERE user_id = ?',
+      [full_name, phone || null, bio || null, userId]
     );
     
     if (result.affectedRows === 0) {
@@ -44,15 +45,16 @@ exports.updateProfile = async (req, res, next) => {
       });
     }
     
+    // Get updated user data
+    const [updatedUsers] = await db.query(
+      'SELECT user_id, full_name, email, role, phone, bio FROM Users WHERE user_id = ?',
+      [userId]
+    );
+    
     res.status(200).json({
       success: true,
       message: 'Cập nhật thông tin thành công',
-      data: {
-        user_id: userId,
-        full_name,
-        email: req.user.email,
-        role: req.user.role
-      }
+      data: updatedUsers[0]
     });
   } catch (error) {
     next(error);

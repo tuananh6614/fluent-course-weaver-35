@@ -60,7 +60,7 @@ export const authService = {
     return response.data;
   },
 
-  updateProfile: async (data: { full_name: string }) => {
+  updateProfile: async (data: { full_name: string, phone?: string, bio?: string }) => {
     const response = await api.put('/users/profile', data);
     return response.data;
   },
