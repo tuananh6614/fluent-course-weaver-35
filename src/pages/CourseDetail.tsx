@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -23,20 +22,26 @@ const CourseDetail: React.FC = () => {
     data: courseData, 
     isLoading, 
     error,
-    isError 
+    isError,
+    refetch 
   } = useQuery({
     queryKey: ['courseDetail', id],
     queryFn: () => courseService.getCourseById(id as string),
     enabled: !!id,
-    retry: 1, // Only retry once to avoid hammering the server
+    retry: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    onError: (error: any) => {
+      toast.error("Lỗi tải dữ liệu khóa học", {
+        description: error.response?.data?.message || "Vui lòng thử lại sau"
+      });
+    }
   });
 
   const course = courseData?.data;
 
   // Fetch chapters with lessons for this course
   useEffect(() => {
-    if (course && course.chapters && course.chapters.length > 0) {
+    if (course?.chapters?.length > 0) {
       // Auto-expand the first chapter
       if (expandedSections.length === 0) {
         setExpandedSections([String(course.chapters[0].chapter_id)]);
@@ -51,7 +56,12 @@ const CourseDetail: React.FC = () => {
       queryFn: () => courseService.getChapterLessons(chapterId),
       enabled: !!chapterId && expandedSections.includes(String(chapterId)),
       retry: 1,
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
+      onError: (error: any) => {
+        toast.error("Lỗi tải dữ liệu bài học", {
+          description: error.response?.data?.message || "Vui lòng thử lại sau"
+        });
+      }
     });
   };
 
@@ -69,6 +79,12 @@ const CourseDetail: React.FC = () => {
   });
 
   const handleEnroll = () => {
+    if (!id) {
+      toast.error("Không thể đăng ký khóa học", {
+        description: "ID khóa học không hợp lệ"
+      });
+      return;
+    }
     enrollMutation.mutate();
   };
 
@@ -98,7 +114,7 @@ const CourseDetail: React.FC = () => {
                 <Button variant="outline" asChild>
                   <Link to="/courses">Quay lại danh sách khóa học</Link>
                 </Button>
-                <Button onClick={() => window.location.reload()}>
+                <Button onClick={() => refetch()}>
                   Tải lại trang
                 </Button>
               </div>
@@ -132,7 +148,7 @@ const CourseDetail: React.FC = () => {
   }
 
   // Error state - course not found
-  if (error || !course) {
+  if (!course) {
     return (
       <Layout>
         <section className="pt-16 bg-muted">
@@ -200,81 +216,77 @@ const CourseDetail: React.FC = () => {
                   {course.description || "Mô tả khóa học."}
                 </p>
 
-                <div className="flex items-center flex-wrap gap-6">
-                  <div className="flex items-center">
-                    <div className="flex items-center text-amber-500 mr-1">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-lg">
-                          {i < Math.floor(course.rating || 0) ? "★" : "☆"}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="font-medium">{(course.rating || 0).toFixed(1)}</span>
-                    <span className="text-muted-foreground ml-1">
-                      ({(course.students || 0).toLocaleString()} học viên)
-                    </span>
+                <div className="flex items-center">
+                  <div className="flex items-center text-amber-500 mr-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-lg">
+                        {i < Math.floor(course.rating || 0) ? "★" : "☆"}
+                      </span>
+                    ))}
                   </div>
+                  <span className="font-medium">{(course.rating || 0).toFixed(1)}</span>
+                  <span className="text-muted-foreground ml-1">
+                    ({(course.students || 0).toLocaleString()} học viên)
+                  </span>
+                </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{course.duration || "25 giờ"}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{chapters.length} chương</span>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <span>{course.duration || "25 giờ"}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <BookOpen className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <span>{chapters.length} chương</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="animate-fade-in animation-delay-300">
-              <Card className="sticky top-20">
-                <CardContent className="pt-6">
-                  <div className="aspect-video rounded-lg overflow-hidden mb-6">
-                    <img
-                      src={course.thumbnail || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97";
-                      }}
-                    />
+            <Card className="sticky top-20">
+              <CardContent className="pt-6">
+                <div className="aspect-video rounded-lg overflow-hidden mb-6">
+                  <img
+                    src={course.thumbnail || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"}
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97";
+                    }}
+                  />
+                </div>
+                <div className="mb-6">
+                  <div className="text-3xl font-bold mb-4">
+                    {course.price ? `$${course.price.toFixed(2)}` : "Miễn phí"}
                   </div>
-                  <div className="mb-6">
-                    <div className="text-3xl font-bold mb-4">
-                      {course.price ? `$${course.price.toFixed(2)}` : "Miễn phí"}
-                    </div>
-                    <Button 
-                      className="w-full mb-3" 
-                      size="lg"
-                      onClick={handleEnroll}
-                      disabled={enrollMutation.isPending}
-                    >
-                      <ShoppingCart className="mr-2 h-5 w-5" />
-                      {enrollMutation.isPending ? "Đang xử lý..." : "Đăng ký ngay"}
-                    </Button>
-                    <p className="text-center text-sm text-muted-foreground">
-                      Đảm bảo hoàn tiền trong 30 ngày
-                    </p>
-                  </div>
+                  <Button 
+                    className="w-full mb-3" 
+                    size="lg"
+                    onClick={handleEnroll}
+                    disabled={enrollMutation.isPending}
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    {enrollMutation.isPending ? "Đang xử lý..." : "Đăng ký ngay"}
+                  </Button>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Đảm bảo hoàn tiền trong 30 ngày
+                  </p>
+                </div>
 
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Khóa học bao gồm:</h3>
-                    <ul className="space-y-2">
-                      {courseFeatures.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                <div>
+                  <h3 className="font-semibold mb-4">Khóa học bao gồm:</h3>
+                  <ul className="space-y-2">
+                    {courseFeatures.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
