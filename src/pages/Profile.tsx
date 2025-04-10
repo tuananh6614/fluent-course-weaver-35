@@ -13,8 +13,23 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { authService, courseService } from "@/services/api";
 import { toast } from "sonner";
 
+// Define the proper type for profile data
+interface ProfileData {
+  full_name: string;
+  email: string;
+  phone: string;
+  bio: string;
+}
+
+// Define the proper type for the updateProfile function parameter
+interface UpdateProfileParams {
+  full_name: string;
+  phone?: string;
+  bio?: string;
+}
+
 const Profile: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileData>({
     full_name: '',
     email: '',
     phone: '',
@@ -36,13 +51,13 @@ const Profile: React.FC = () => {
   
   const enrolledCourses = enrolledCoursesData?.data || [];
 
-  // Update profile mutation
+  // Update profile mutation with correct types
   const updateProfileMutation = useMutation({
-    mutationFn: (data) => authService.updateProfile(data),
+    mutationFn: (data: UpdateProfileParams) => authService.updateProfile(data),
     onSuccess: () => {
       toast.success("Thông tin đã được cập nhật");
     },
-    onError: (error) => {
+    onError: (error: any) => { // Use any for now to handle different error shapes
       toast.error("Lỗi cập nhật thông tin", { 
         description: error.response?.data?.message || "Vui lòng thử lại"
       });
@@ -62,7 +77,7 @@ const Profile: React.FC = () => {
   }, [userData]);
 
   // Handle input changes
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -70,11 +85,13 @@ const Profile: React.FC = () => {
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  // Handle form submission with proper type
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     updateProfileMutation.mutate({
-      full_name: formData.full_name
+      full_name: formData.full_name,
+      phone: formData.phone,
+      bio: formData.bio
     });
   };
 
