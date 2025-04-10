@@ -30,6 +30,8 @@ api.interceptors.response.use(
       error.response?.data?.message || 
       'Đã xảy ra lỗi. Vui lòng thử lại sau.';
     
+    console.error('API Error:', error);
+    
     toast.error('Lỗi', {
       description: message,
     });
@@ -79,8 +81,13 @@ export const courseService = {
   },
   
   getCourseById: async (id: string | number) => {
-    const response = await api.get(`/courses/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/courses/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+      throw error;
+    }
   },
   
   enrollCourse: async (courseId: string | number) => {
@@ -94,8 +101,13 @@ export const courseService = {
   },
   
   getChapterLessons: async (chapterId: string | number) => {
-    const response = await api.get(`/chapters/${chapterId}/lessons`);
-    return response.data;
+    try {
+      const response = await api.get(`/chapters/${chapterId}/lessons`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching lessons for chapter ${chapterId}:`, error);
+      throw error;
+    }
   },
 
   getLesson: async (lessonId: string | number) => {

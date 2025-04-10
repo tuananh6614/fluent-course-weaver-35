@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Clock, Users, CheckCircle2, 
   PlayCircle, FileText, ShoppingCart 
@@ -33,22 +32,17 @@ const CourseDetail: React.FC = () => {
     if (course && course.chapters) {
       // Auto-expand the first chapter
       if (course.chapters.length > 0 && expandedSections.length === 0) {
-        setExpandedSections([course.chapters[0].chapter_id.toString()]);
+        setExpandedSections([String(course.chapters[0].chapter_id)]);
       }
-
-      // Pre-fetch lessons for all chapters
-      course.chapters.forEach((chapter) => {
-        courseService.getChapterLessons(chapter.chapter_id);
-      });
     }
-  }, [course]);
+  }, [course, expandedSections.length]);
 
   // Get lessons for a specific chapter
   const useChapterLessons = (chapterId: number | string) => {
     return useQuery({
       queryKey: ['chapterLessons', chapterId],
       queryFn: () => courseService.getChapterLessons(chapterId),
-      enabled: !!chapterId && expandedSections.includes(chapterId.toString()),
+      enabled: !!chapterId && expandedSections.includes(String(chapterId)),
     });
   };
 
@@ -262,14 +256,15 @@ const CourseDetail: React.FC = () => {
           <div className="space-y-4">
             {chapters.length > 0 ? (
               chapters.map((chapter) => {
-                const { data: lessonsData, isLoading: lessonsLoading } = useChapterLessons(chapter.chapter_id);
+                const chapterId = chapter.chapter_id;
+                const { data: lessonsData, isLoading: lessonsLoading } = useChapterLessons(chapterId);
                 const lessons = lessonsData?.data || [];
                 
                 return (
-                  <div key={chapter.chapter_id} className="border rounded-lg overflow-hidden">
+                  <div key={chapterId} className="border rounded-lg overflow-hidden">
                     <button
                       className="w-full p-4 flex justify-between items-center hover:bg-muted/50 transition-colors"
-                      onClick={() => toggleSection(chapter.chapter_id.toString())}
+                      onClick={() => toggleSection(String(chapterId))}
                     >
                       <div className="flex items-center">
                         <h3 className="font-medium text-lg">{chapter.title}</h3>
@@ -278,7 +273,7 @@ const CourseDetail: React.FC = () => {
                         </Badge>
                       </div>
                       <div>
-                        {expandedSections.includes(chapter.chapter_id.toString()) ? (
+                        {expandedSections.includes(String(chapterId)) ? (
                           <span>−</span>
                         ) : (
                           <span>+</span>
@@ -286,7 +281,7 @@ const CourseDetail: React.FC = () => {
                       </div>
                     </button>
 
-                    {expandedSections.includes(chapter.chapter_id.toString()) && (
+                    {expandedSections.includes(String(chapterId)) && (
                       <div className="border-t">
                         {lessonsLoading ? (
                           <div className="p-4">
