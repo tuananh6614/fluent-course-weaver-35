@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { 
   BookOpen, Clock, Users, CheckCircle2, 
-  PlayCircle, FileText, ShoppingCart 
+  PlayCircle, FileText, ShoppingCart, AlertCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,20 +18,27 @@ const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
-  // Fetch course data from API
-  const { data: courseData, isLoading, error } = useQuery({
+  // Fetch course data from API with better error handling
+  const { 
+    data: courseData, 
+    isLoading, 
+    error,
+    isError 
+  } = useQuery({
     queryKey: ['courseDetail', id],
     queryFn: () => courseService.getCourseById(id as string),
     enabled: !!id,
+    retry: 1, // Only retry once to avoid hammering the server
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const course = courseData?.data;
 
   // Fetch chapters with lessons for this course
   useEffect(() => {
-    if (course && course.chapters) {
+    if (course && course.chapters && course.chapters.length > 0) {
       // Auto-expand the first chapter
-      if (course.chapters.length > 0 && expandedSections.length === 0) {
+      if (expandedSections.length === 0) {
         setExpandedSections([String(course.chapters[0].chapter_id)]);
       }
     }
@@ -43,6 +50,8 @@ const CourseDetail: React.FC = () => {
       queryKey: ['chapterLessons', chapterId],
       queryFn: () => courseService.getChapterLessons(chapterId),
       enabled: !!chapterId && expandedSections.includes(String(chapterId)),
+      retry: 1,
+      staleTime: 1000 * 60 * 5, // 5 minutes
     });
   };
 
@@ -71,6 +80,35 @@ const CourseDetail: React.FC = () => {
     );
   };
 
+  // Network error state
+  if (isError) {
+    return (
+      <Layout>
+        <section className="pt-16 bg-muted">
+          <div className="page-container py-12">
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+              <div className="mb-6 text-red-500">
+                <AlertCircle size={50} />
+              </div>
+              <h2 className="text-2xl font-bold mb-4">Không thể tải dữ liệu khóa học</h2>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                Có lỗi khi kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="outline" asChild>
+                  <Link to="/courses">Quay lại danh sách khóa học</Link>
+                </Button>
+                <Button onClick={() => window.location.reload()}>
+                  Tải lại trang
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Layout>
+    );
+  }
+
   // Loading state
   if (isLoading) {
     return (
@@ -93,7 +131,7 @@ const CourseDetail: React.FC = () => {
     );
   }
 
-  // Error state
+  // Error state - course not found
   if (error || !course) {
     return (
       <Layout>
@@ -105,7 +143,7 @@ const CourseDetail: React.FC = () => {
                 Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
               </p>
               <Button asChild>
-                <a href="/courses">Quay lại danh sách khóa học</a>
+                <Link to="/courses">Quay lại danh sách khóa học</Link>
               </Button>
             </div>
           </div>
@@ -140,6 +178,7 @@ const CourseDetail: React.FC = () => {
     }
   };
 
+  // Main render
   return (
     <Layout>
       {/* Hero Section */}
@@ -198,6 +237,10 @@ const CourseDetail: React.FC = () => {
                       src={course.thumbnail || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"}
                       alt={course.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97";
+                      }}
                     />
                   </div>
                   <div className="mb-6">
@@ -288,7 +331,7 @@ const CourseDetail: React.FC = () => {
                             <Skeleton className="h-6 w-full mb-2" />
                             <Skeleton className="h-6 w-3/4" />
                           </div>
-                        ) : lessons.length > 0 ? (
+                        ) : lessons && lessons.length > 0 ? (
                           lessons.map((lesson) => (
                             <div
                               key={lesson.lesson_id}
