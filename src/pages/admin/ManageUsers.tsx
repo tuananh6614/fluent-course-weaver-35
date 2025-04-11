@@ -20,7 +20,7 @@ const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/
 const ManageUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch users
+  // Fetch users - modified to use onSuccess/onError pattern compatible with React Query v5
   const { data: usersResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -31,11 +31,14 @@ const ManageUsers = () => {
       });
       return response.data;
     },
-    onError: (err: any) => {
-      console.error("Error fetching users:", err);
-      toast.error("Không thể tải danh sách người dùng", {
-        description: err.response?.data?.message || "Vui lòng thử lại sau"
-      });
+    // Using meta.onError instead of direct onError property
+    meta: {
+      onError: (err: any) => {
+        console.error("Error fetching users:", err);
+        toast.error("Không thể tải danh sách người dùng", {
+          description: err.response?.data?.message || "Vui lòng thử lại sau"
+        });
+      }
     }
   });
 
@@ -80,6 +83,13 @@ const ManageUsers = () => {
     const action = isBlocked ? 'unblock' : 'block';
     toggleBlockMutation.mutate({ userId, action });
   };
+
+  // Error handler for useQuery
+  useEffect(() => {
+    if (error) {
+      console.error("Error in useEffect:", error);
+    }
+  }, [error]);
 
   return (
     <Layout>
@@ -163,7 +173,7 @@ const ManageUsers = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.is_blocked ? 'destructive' : 'success'} className="capitalize">
+                          <Badge variant={user.is_blocked ? 'destructive' : 'default'} className="capitalize">
                             {user.is_blocked ? 'Đã khóa' : 'Hoạt động'}
                           </Badge>
                         </TableCell>
