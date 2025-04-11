@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Clock, BarChart, Users, Award, CheckCircle2, 
-  PlayCircle, FileText, Download, ShoppingCart 
+  PlayCircle, FileText, Download, ShoppingCart, RefreshCcw 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,13 +21,17 @@ const CourseDetail: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   // Fetch course data from API
-  const { data: courseData, isLoading, error } = useQuery({
+  const { data: courseResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['courseDetail', id],
     queryFn: () => courseService.getCourseById(id as string),
     enabled: !!id,
   });
 
-  const course = courseData?.data;
+  const course = courseResponse?.data;
+  const chapters = course?.chapters || [];
+  
+  console.log("Course data:", course);
+  console.log("Chapters:", chapters);
 
   // Enroll course mutation
   const enrollMutation = useMutation({
@@ -42,11 +46,43 @@ const CourseDetail: React.FC = () => {
     }
   });
 
+  // Fetch lessons for each chapter
+  const [chapterLessons, setChapterLessons] = useState<Record<string, any[]>>({});
+  const [loadingLessons, setLoadingLessons] = useState<Record<string, boolean>>({});
+
+  // Function to fetch lessons for a chapter
+  const fetchLessonsForChapter = async (chapterId: string | number) => {
+    if (loadingLessons[chapterId]) return;
+    
+    try {
+      setLoadingLessons(prev => ({ ...prev, [chapterId]: true }));
+      console.log(`Fetching lessons for chapter ${chapterId}`);
+      
+      const response = await courseService.getChapterLessons(chapterId);
+      console.log(`Lessons for chapter ${chapterId}:`, response);
+      
+      setChapterLessons(prev => ({
+        ...prev,
+        [chapterId]: response?.data || []
+      }));
+    } catch (err) {
+      console.error(`Error fetching lessons for chapter ${chapterId}:`, err);
+      toast.error("Không thể tải bài học");
+    } finally {
+      setLoadingLessons(prev => ({ ...prev, [chapterId]: false }));
+    }
+  };
+
   const handleEnroll = () => {
     enrollMutation.mutate();
   };
 
   const toggleSection = (sectionId: string) => {
+    // If not already expanded, fetch lessons
+    if (!expandedSections.includes(sectionId)) {
+      fetchLessonsForChapter(sectionId);
+    }
+    
     setExpandedSections((prev) =>
       prev.includes(sectionId)
         ? prev.filter((id) => id !== sectionId)
@@ -83,13 +119,19 @@ const CourseDetail: React.FC = () => {
         <section className="pt-16 bg-muted">
           <div className="page-container py-12">
             <div className="flex flex-col items-center justify-center min-h-[400px]">
-              <h2 className="text-xl font-bold mb-4">Không tìm thấy khóa học</h2>
+              <h2 className="text-xl font-bold mb-4">Không thể tải khóa học</h2>
               <p className="text-muted-foreground mb-6">
-                Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+                Đã xảy ra lỗi khi tải thông tin khóa học.
               </p>
-              <Button asChild>
-                <a href="/courses">Quay lại danh sách khóa học</a>
-              </Button>
+              <div className="flex gap-4">
+                <Button onClick={() => refetch()}>
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                  Thử lại
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/courses">Quay lại danh sách khóa học</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
@@ -98,8 +140,9 @@ const CourseDetail: React.FC = () => {
   }
 
   // Calculate total number of lessons
-  const chapters = course.chapters || [];
-  const totalLessons = chapters.length; // For now just use chapter count as lesson count
+  const totalLessons = chapters.reduce((total, chapter) => {
+    return total + (chapter.lessons_count || 0);
+  }, 0);
 
   // Get instructor information (placeholder for now)
   const instructor = {
@@ -246,10 +289,8 @@ const CourseDetail: React.FC = () => {
       <section className="py-12">
         <div className="page-container">
           <Tabs defaultValue="curriculum">
-            <TabsList className="mb-8 w-full grid grid-cols-3">
+            <TabsList className="mb-8">
               <TabsTrigger value="curriculum">Nội dung</TabsTrigger>
-              <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-              <TabsTrigger value="instructor">Giảng viên</TabsTrigger>
             </TabsList>
 
             <TabsContent value="curriculum" className="animate-fade-in">
@@ -292,8 +333,12 @@ const CourseDetail: React.FC = () => {
 
                       {expandedSections.includes(chapter.chapter_id.toString()) && (
                         <div className="border-t">
-                          {(chapter.lessons || []).length > 0 ? (
-                            chapter.lessons.map((lesson) => (
+                          {loadingLessons[chapter.chapter_id] ? (
+                            <div className="p-4 text-center">
+                              <p className="text-muted-foreground">Đang tải bài học...</p>
+                            </div>
+                          ) : chapterLessons[chapter.chapter_id]?.length > 0 ? (
+                            chapterLessons[chapter.chapter_id].map((lesson) => (
                               <div
                                 key={lesson.lesson_id}
                                 className="p-4 flex justify-between items-center hover:bg-muted/30 transition-colors border-b last:border-b-0"
@@ -322,7 +367,16 @@ const CourseDetail: React.FC = () => {
                             ))
                           ) : (
                             <div className="p-4 text-center text-muted-foreground">
-                              Không có bài học nào trong chương này.
+                              <p>Không có bài học nào trong chương này</p>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="mt-2"
+                                onClick={() => fetchLessonsForChapter(chapter.chapter_id)}
+                              >
+                                <RefreshCcw className="h-3 w-3 mr-1" />
+                                Tải lại
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -332,93 +386,17 @@ const CourseDetail: React.FC = () => {
                 ) : (
                   <div className="text-center py-8 border rounded-lg">
                     <p className="text-muted-foreground">Chưa có chương nào cho khóa học này.</p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => refetch()}
+                    >
+                      <RefreshCcw className="h-3 w-3 mr-1" />
+                      Tải lại
+                    </Button>
                   </div>
                 )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="overview" className="animate-fade-in">
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-2xl font-semibold mb-4">
-                    Bạn sẽ học được gì
-                  </h2>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {(course.learning_outcomes || [
-                      "Xây dựng ứng dụng web mạnh mẽ, nhanh chóng, thân thiện với người dùng",
-                      "Ứng dụng cho công việc lương cao hoặc làm freelancer",
-                      "Hiểu hệ sinh thái React và xây dựng ứng dụng frontend phức tạp",
-                      "Học quản lý state và hooks để tương tác component hiệu quả",
-                      "Tạo UI đáp ứng với các mẫu thiết kế hiện đại",
-                      "Tích hợp với API RESTful và dịch vụ GraphQL",
-                    ]).map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-semibold mb-4">Yêu cầu</h2>
-                  <ul className="list-disc list-inside space-y-2 pl-4">
-                    {(course.prerequisites || [
-                      "Kiến thức cơ bản về JavaScript",
-                      "Hiểu biết về HTML và CSS",
-                      "Không cần kinh nghiệm React trước đó",
-                    ]).map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-semibold mb-4">Đối tượng mục tiêu</h2>
-                  <ul className="list-disc list-inside space-y-2 pl-4">
-                    {(course.target_audience || [
-                      "Nhà phát triển web muốn học React",
-                      "Nhà phát triển JavaScript muốn mở rộng kỹ năng",
-                      "Người mới bắt đầu với kiến thức phát triển web cơ bản",
-                      "Bất kỳ ai quan tâm đến phát triển frontend",
-                    ]).map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="instructor" className="animate-fade-in">
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="md:w-1/3">
-                  <div className="aspect-square w-48 h-48 rounded-full overflow-hidden mb-4 mx-auto">
-                    <img
-                      src={instructor.avatar}
-                      alt={instructor.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-                <div className="md:w-2/3">
-                  <h2 className="text-2xl font-semibold mb-1">
-                    {instructor.name}
-                  </h2>
-                  <p className="text-muted-foreground mb-4">
-                    {instructor.title}
-                  </p>
-                  <div className="flex items-center gap-6 mb-6">
-                    <div className="flex items-center">
-                      <Users className="h-5 w-5 mr-2 text-muted-foreground" />
-                      <span>{(course.students || 0).toLocaleString()} học viên</span>
-                    </div>
-                    <div className="flex items-center">
-                      <BookOpen className="h-5 w-5 mr-2 text-muted-foreground" />
-                      <span>{course.instructor_courses || 1} khóa học</span>
-                    </div>
-                  </div>
-                  <p className="text-lg mb-6">{instructor.bio}</p>
-                </div>
               </div>
             </TabsContent>
           </Tabs>

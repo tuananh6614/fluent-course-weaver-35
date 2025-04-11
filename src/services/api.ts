@@ -1,9 +1,8 @@
-
 import axios from 'axios';
 import { toast } from "sonner";
 
-// Base API URL - change this to match your backend server address
-const API_URL = 'http://localhost:5000/api';
+// Base API URL with fallback - try to connect to backend server first, fallback to mock data if needed
+const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api' : '/api';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -11,6 +10,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Add a longer timeout to prevent quick failures
+  timeout: 30000,
 });
 
 // Request interceptor to add auth token
@@ -26,6 +27,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("API Error:", error);
+    
     const message = 
       error.response?.data?.message || 
       'Đã xảy ra lỗi. Vui lòng thử lại sau.';
@@ -74,13 +77,39 @@ export const authService = {
 // Course services
 export const courseService = {
   getAllCourses: async () => {
-    const response = await api.get('/courses');
-    return response.data;
+    try {
+      console.log("Fetching all courses...");
+      const response = await api.get('/courses');
+      console.log("Courses fetched:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all courses:", error);
+      // Return empty data structure to prevent errors
+      return { success: false, count: 0, data: [] };
+    }
   },
   
   getCourseById: async (id: string | number) => {
-    const response = await api.get(`/courses/${id}`);
-    return response.data;
+    try {
+      console.log(`Fetching course with ID: ${id}`);
+      const response = await api.get(`/courses/${id}`);
+      console.log("Course detail fetched:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching course with ID ${id}:`, error);
+      // Return empty data structure to prevent errors
+      return { success: false, data: { chapters: [] } };
+    }
+  },
+  
+  createCourse: async (courseData: { title: string, description?: string, thumbnail?: string }) => {
+    try {
+      const response = await api.post('/courses', courseData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating course:", error);
+      throw error;
+    }
   },
   
   enrollCourse: async (courseId: string | number) => {

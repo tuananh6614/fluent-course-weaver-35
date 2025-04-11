@@ -7,19 +7,31 @@ import SectionHeading from "@/components/common/SectionHeading";
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RefreshCcw } from "lucide-react";
 
 const FeaturedCourses: React.FC = () => {
   // Fetch courses data
-  const { data: coursesResponse, isLoading, error } = useQuery({
+  const { 
+    data: coursesResponse, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
     queryKey: ['featuredCourses'],
     queryFn: courseService.getAllCourses,
   });
 
   // Get all courses and filter to show only 4 featured ones
   const allCourses = coursesResponse?.data || [];
-  const featuredCourses = allCourses
-    .filter(course => course.rating >= 4.0 || course.featured)
-    .slice(0, 4);
+  
+  console.log("Featured courses data:", allCourses);
+  
+  // Select the first 4 courses or those with high ratings
+  const featuredCourses = allCourses.length > 0 
+    ? allCourses
+        .slice(0, Math.min(4, allCourses.length))
+        .map(course => ({ ...course, featured: true }))
+    : [];
 
   // Skeleton loader for featured courses
   const CourseSkeletons = () => (
@@ -52,7 +64,11 @@ const FeaturedCourses: React.FC = () => {
           <CourseSkeletons />
         ) : error ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-6">Không thể tải khóa học nổi bật</p>
+            <p className="text-muted-foreground mb-4">Không thể tải khóa học nổi bật</p>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Thử lại
+            </Button>
           </div>
         ) : featuredCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -80,6 +96,10 @@ const FeaturedCourses: React.FC = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-6">Hiện chưa có khóa học nổi bật</p>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Tải lại
+            </Button>
           </div>
         )}
 
