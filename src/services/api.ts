@@ -3,8 +3,7 @@ import axios from 'axios';
 import { toast } from "sonner";
 
 // Base API URL - change this to match your backend server address
-// Use an environment variable if available, or fallback to a default URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000/api';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -12,8 +11,6 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Add a timeout to avoid hanging requests
-  timeout: 10000,
 });
 
 // Request interceptor to add auth token
@@ -29,16 +26,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
-    
-    // Get an appropriate error message
-    let message = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
-    
-    if (error.code === 'ERR_NETWORK') {
-      message = 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.';
-    } else if (error.response?.data?.message) {
-      message = error.response.data.message;
-    }
+    const message = 
+      error.response?.data?.message || 
+      'Đã xảy ra lỗi. Vui lòng thử lại sau.';
     
     toast.error('Lỗi', {
       description: message,
@@ -84,80 +74,38 @@ export const authService = {
 // Course services
 export const courseService = {
   getAllCourses: async () => {
-    try {
-      const response = await api.get('/courses');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching all courses:', error);
-      // Return empty data structure to prevent UI errors
-      return { success: false, data: [] };
-    }
+    const response = await api.get('/courses');
+    return response.data;
   },
   
   getCourseById: async (id: string | number) => {
-    try {
-      if (!id) throw new Error('Course ID is required');
-      
-      const response = await api.get(`/courses/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching course details:', error);
-      throw error;
-    }
+    const response = await api.get(`/courses/${id}`);
+    return response.data;
   },
   
   enrollCourse: async (courseId: string | number) => {
-    try {
-      const response = await api.post(`/courses/${courseId}/enroll`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error enrolling in course ${courseId}:`, error);
-      throw error;
-    }
+    const response = await api.post(`/courses/${courseId}/enroll`);
+    return response.data;
   },
   
   getEnrolledCourses: async () => {
-    try {
-      const response = await api.get('/enrollments');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching enrolled courses:', error);
-      // Return empty data structure to prevent UI errors
-      return { success: false, data: [] };
-    }
+    const response = await api.get('/enrollments');
+    return response.data;
   },
   
   getChapterLessons: async (chapterId: string | number) => {
-    try {
-      if (!chapterId) throw new Error('Chapter ID is required');
-      
-      const response = await api.get(`/chapters/${chapterId}/lessons`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching lessons for chapter ${chapterId}:`, error);
-      // Return empty data structure to prevent UI errors
-      return { success: false, data: [] };
-    }
+    const response = await api.get(`/chapters/${chapterId}/lessons`);
+    return response.data;
   },
 
   getLesson: async (lessonId: string | number) => {
-    try {
-      const response = await api.get(`/lessons/${lessonId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching lesson ${lessonId}:`, error);
-      throw error;
-    }
+    const response = await api.get(`/lessons/${lessonId}`);
+    return response.data;
   },
 
   updateProgress: async (courseId: string | number, data: { progress_percent: number, current_lesson_id?: number }) => {
-    try {
-      const response = await api.put(`/enrollments/${courseId}/progress`, data);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating progress for course ${courseId}:`, error);
-      throw error;
-    }
+    const response = await api.put(`/enrollments/${courseId}/progress`, data);
+    return response.data;
   },
 };
 

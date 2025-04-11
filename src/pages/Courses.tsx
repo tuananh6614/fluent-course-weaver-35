@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
+import SectionHeading from "@/components/common/SectionHeading";
 import CourseCard from "@/components/courses/CourseCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
@@ -7,24 +9,6 @@ import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const CourseSkeletons = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {Array(8).fill(0).map((_, index) => (
-      <div key={index} className="animate-pulse">
-        <div className="aspect-video bg-muted rounded-t-md"></div>
-        <div className="p-4 space-y-2">
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-          <div className="flex justify-between pt-2">
-            <Skeleton className="h-4 w-1/4" />
-            <Skeleton className="h-4 w-1/4" />
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-);
 
 const Courses: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,10 +18,6 @@ const Courses: React.FC = () => {
   const { data: coursesResponse, isLoading, error } = useQuery({
     queryKey: ['courses'],
     queryFn: courseService.getAllCourses,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    onError: (error: any) => {
-      console.error('Error fetching courses:', error);
-    }
   });
 
   const coursesData = coursesResponse?.data || [];
@@ -45,8 +25,7 @@ const Courses: React.FC = () => {
   // Filtered courses based on search
   const filteredCourses = coursesData.filter((course) => {
     const matchesSearch = course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        course?.instructor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        course?.category?.toLowerCase().includes(searchQuery.toLowerCase());
+                        course?.instructor?.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesSearch;
   });
@@ -63,31 +42,50 @@ const Courses: React.FC = () => {
     return 0;
   });
 
+  // Skeleton loader for courses
+  const CourseSkeletons = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {Array(8).fill(0).map((_, index) => (
+        <div key={index} className="animate-pulse">
+          <div className="aspect-video bg-muted rounded-t-md"></div>
+          <div className="p-4 space-y-2">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="flex justify-between pt-2">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-4 w-1/4" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Layout>
-      {/* Search Section */}
-      <section className="bg-muted py-12">
+      <section className="bg-muted py-16">
         <div className="page-container">
-          <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">Khám phá các khóa học</h1>
-            <p className="text-muted-foreground mb-8">
-              Tìm kiếm khóa học phù hợp với bạn từ thư viện khóa học đa dạng của chúng tôi
-            </p>
+          <SectionHeading
+            title="Khám Phá Các Khóa Học"
+            subtitle="Khám phá kỹ năng mới, mở rộng kiến thức và theo đuổi đam mê của bạn"
+            align="center"
+          />
+
+          <div className="max-w-3xl mx-auto mb-10">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Tìm kiếm khóa học..."
+                placeholder="Tìm kiếm khóa học, chủ đề, hoặc giảng viên..."
+                className="pr-10 py-6 text-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
               />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Course List Section */}
       <section className="py-12">
         <div className="page-container">
           <div className="space-y-6">
@@ -140,14 +138,13 @@ const Courses: React.FC = () => {
                       <CourseCard 
                         id={course.course_id}
                         title={course.title || "Khóa học"}
-                        instructor={course.instructor}
-                        thumbnail={course.thumbnail || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"}
-                        category={course.category || "Chung"}
+                        instructor={course.instructor || "Giảng viên"}
+                        thumbnail={course.thumbnail || "https://placehold.co/800x450"}
+                        category={course.category || "General"}
                         rating={course.rating || 0}
                         students={course.students || 0}
                         duration={course.duration || "0 giờ"}
                         price={course.price || 0}
-                        level={course.level}
                       />
                     </div>
                   ))}

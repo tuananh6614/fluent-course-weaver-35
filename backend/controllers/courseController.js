@@ -1,3 +1,4 @@
+
 const db = require('../config/db');
 
 // @desc    Get all courses
@@ -5,16 +6,9 @@ const db = require('../config/db');
 // @access  Public
 exports.getCourses = async (req, res, next) => {
   try {
-    const [courses] = await db.query(`
-      SELECT c.*, 
-        COUNT(DISTINCT e.user_id) as students,
-        COALESCE(AVG(ts.score), 0) as rating
-      FROM Courses c
-      LEFT JOIN Enrollments e ON c.course_id = e.course_id
-      LEFT JOIN Test_Scores ts ON c.course_id = ts.exam_id
-      GROUP BY c.course_id
-      ORDER BY c.created_at DESC
-    `);
+    const [courses] = await db.query(
+      'SELECT * FROM Courses ORDER BY created_at DESC'
+    );
     
     res.status(200).json({
       success: true,
@@ -33,17 +27,11 @@ exports.getCourse = async (req, res, next) => {
   try {
     const courseId = req.params.id;
     
-    // Get course details with student count and rating
-    const [courses] = await db.query(`
-      SELECT c.*, 
-        COUNT(DISTINCT e.user_id) as students,
-        COALESCE(AVG(ts.score), 0) as rating
-      FROM Courses c
-      LEFT JOIN Enrollments e ON c.course_id = e.course_id
-      LEFT JOIN Test_Scores ts ON c.course_id = ts.exam_id
-      WHERE c.course_id = ?
-      GROUP BY c.course_id
-    `, [courseId]);
+    // Get course details
+    const [courses] = await db.query(
+      'SELECT * FROM Courses WHERE course_id = ?',
+      [courseId]
+    );
     
     if (courses.length === 0) {
       return res.status(404).json({
@@ -54,14 +42,11 @@ exports.getCourse = async (req, res, next) => {
     
     const course = courses[0];
     
-    // Get chapters with lesson count for the course
-    const [chapters] = await db.query(`
-      SELECT c.*, 
-        (SELECT COUNT(*) FROM Lessons l WHERE l.chapter_id = c.chapter_id) as lessons_count
-      FROM Chapters c
-      WHERE c.course_id = ?
-      ORDER BY c.chapter_order
-    `, [courseId]);
+    // Get chapters for the course
+    const [chapters] = await db.query(
+      'SELECT * FROM Chapters WHERE course_id = ? ORDER BY chapter_order',
+      [courseId]
+    );
     
     // Add chapters to course
     course.chapters = chapters;
@@ -80,7 +65,7 @@ exports.getCourse = async (req, res, next) => {
 // @access  Private/Admin
 exports.createCourse = async (req, res, next) => {
   try {
-    const { title, description, thumbnail, duration, level, category, price } = req.body;
+    const { title, description, thumbnail } = req.body;
     
     if (!title) {
       return res.status(400).json({
@@ -90,8 +75,8 @@ exports.createCourse = async (req, res, next) => {
     }
     
     const [result] = await db.query(
-      'INSERT INTO Courses (title, description, thumbnail, duration, level, category, price) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [title, description || '', thumbnail || '', duration || '0 giờ', level || 'Cơ bản', category || 'Chung', price || 0]
+      'INSERT INTO Courses (title, description, thumbnail) VALUES (?, ?, ?)',
+      [title, description || '', thumbnail || '']
     );
     
     if (result.affectedRows === 0) {
@@ -108,11 +93,7 @@ exports.createCourse = async (req, res, next) => {
         course_id: result.insertId,
         title,
         description,
-        thumbnail,
-        duration,
-        level,
-        category,
-        price
+        thumbnail
       }
     });
   } catch (error) {
@@ -126,7 +107,7 @@ exports.createCourse = async (req, res, next) => {
 exports.updateCourse = async (req, res, next) => {
   try {
     const courseId = req.params.id;
-    const { title, description, thumbnail, duration, level, category, price } = req.body;
+    const { title, description, thumbnail } = req.body;
     
     // Check if course exists
     const [courses] = await db.query(
@@ -143,15 +124,11 @@ exports.updateCourse = async (req, res, next) => {
     
     // Update course
     const [result] = await db.query(
-      'UPDATE Courses SET title = ?, description = ?, thumbnail = ?, duration = ?, level = ?, category = ?, price = ? WHERE course_id = ?',
+      'UPDATE Courses SET title = ?, description = ?, thumbnail = ? WHERE course_id = ?',
       [
         title || courses[0].title,
         description !== undefined ? description : courses[0].description,
         thumbnail || courses[0].thumbnail,
-        duration || courses[0].duration,
-        level || courses[0].level,
-        category || courses[0].category,
-        price !== undefined ? price : courses[0].price,
         courseId
       ]
     );
@@ -170,11 +147,7 @@ exports.updateCourse = async (req, res, next) => {
         course_id: courseId,
         title: title || courses[0].title,
         description: description !== undefined ? description : courses[0].description,
-        thumbnail: thumbnail || courses[0].thumbnail,
-        duration: duration || courses[0].duration,
-        level: level || courses[0].level,
-        category: category || courses[0].category,
-        price: price !== undefined ? price : courses[0].price
+        thumbnail: thumbnail || courses[0].thumbnail
       }
     });
   } catch (error) {

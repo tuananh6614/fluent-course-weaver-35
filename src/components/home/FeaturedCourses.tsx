@@ -15,9 +15,11 @@ const FeaturedCourses: React.FC = () => {
     queryFn: courseService.getAllCourses,
   });
 
-  // Get all courses and display the first 4 courses directly
+  // Get all courses and filter to show only 4 featured ones
   const allCourses = coursesResponse?.data || [];
-  const featuredCourses = allCourses.slice(0, 4);
+  const featuredCourses = allCourses
+    .filter(course => course.rating >= 4.0 || course.featured)
+    .slice(0, 4);
 
   // Skeleton loader for featured courses
   const CourseSkeletons = () => (
