@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Clock, BarChart, Users, Award, CheckCircle2, 
-  PlayCircle, FileText, Download, ShoppingCart, RefreshCcw 
+  PlayCircle, FileText, Download, ShoppingCart, RefreshCcw,
+  ChevronUp, ChevronDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,10 +16,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { courseService } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   // Fetch course data from API
   const { data: courseResponse, isLoading, error, refetch } = useQuery({
@@ -46,48 +52,30 @@ const CourseDetail: React.FC = () => {
     }
   });
 
-  // Fetch lessons for each chapter
-  const [chapterLessons, setChapterLessons] = useState<Record<string, any[]>>({});
-  const [loadingLessons, setLoadingLessons] = useState<Record<string, boolean>>({});
-
   // Function to fetch lessons for a chapter
-  const fetchLessonsForChapter = async (chapterId: string | number) => {
-    if (loadingLessons[chapterId]) return;
-    
-    try {
-      setLoadingLessons(prev => ({ ...prev, [chapterId]: true }));
-      console.log(`Fetching lessons for chapter ${chapterId}`);
-      
-      const response = await courseService.getChapterLessons(chapterId);
-      console.log(`Lessons for chapter ${chapterId}:`, response);
-      
-      setChapterLessons(prev => ({
-        ...prev,
-        [chapterId]: response?.data || []
-      }));
-    } catch (err) {
-      console.error(`Error fetching lessons for chapter ${chapterId}:`, err);
-      toast.error("Không thể tải bài học");
-    } finally {
-      setLoadingLessons(prev => ({ ...prev, [chapterId]: false }));
-    }
+  const getLessonsForChapter = (chapterId: string) => {
+    return useQuery({
+      queryKey: ['lessons', chapterId],
+      queryFn: () => courseService.getChapterLessons(chapterId),
+      enabled: false, // Don't fetch automatically
+    });
   };
 
   const handleEnroll = () => {
     enrollMutation.mutate();
   };
 
-  const toggleSection = (sectionId: string) => {
-    // If not already expanded, fetch lessons
-    if (!expandedSections.includes(sectionId)) {
-      fetchLessonsForChapter(sectionId);
+  const getLessonIcon = (type: string) => {
+    switch (type) {
+      case "video":
+        return <PlayCircle className="h-4 w-4" />;
+      case "quiz":
+        return <BarChart className="h-4 w-4" />;
+      case "exercise":
+        return <FileText className="h-4 w-4" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
     }
-    
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
   };
 
   // Loading state
@@ -141,7 +129,7 @@ const CourseDetail: React.FC = () => {
 
   // Calculate total number of lessons
   const totalLessons = chapters.reduce((total, chapter) => {
-    return total + (chapter.lessons_count || 0);
+    return total + (Number(chapter.lessons_count) || 0);
   }, 0);
 
   // Get instructor information (placeholder for now)
@@ -161,19 +149,6 @@ const CourseDetail: React.FC = () => {
     `${course.projects_count || 12} dự án thực hành`,
     `${course.resources_count || 200}+ tài liệu tải xuống`,
   ];
-
-  const getLessonIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return <PlayCircle className="h-4 w-4" />;
-      case "quiz":
-        return <BarChart className="h-4 w-4" />;
-      case "exercise":
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <BookOpen className="h-4 w-4" />;
-    }
-  };
 
   return (
     <Layout>
@@ -310,79 +285,99 @@ const CourseDetail: React.FC = () => {
 
               <div className="space-y-4">
                 {chapters.length > 0 ? (
-                  chapters.map((chapter) => (
-                    <div key={chapter.chapter_id} className="border rounded-lg overflow-hidden">
-                      <button
-                        className="w-full p-4 flex justify-between items-center hover:bg-muted/50 transition-colors"
-                        onClick={() => toggleSection(chapter.chapter_id.toString())}
-                      >
-                        <div className="flex items-center">
-                          <h3 className="font-medium text-lg">{chapter.title}</h3>
-                          <Badge variant="outline" className="ml-3">
-                            {chapter.lessons_count || 0} bài
-                          </Badge>
-                        </div>
-                        <div>
-                          {expandedSections.includes(chapter.chapter_id.toString()) ? (
-                            <span>−</span>
-                          ) : (
-                            <span>+</span>
-                          )}
-                        </div>
-                      </button>
+                  <Accordion type="single" collapsible className="w-full">
+                    {chapters.map((chapter) => {
+                      // Initialize the lessons query
+                      const {
+                        data: lessonsData,
+                        isLoading: isLoadingLessons,
+                        isError: isErrorLessons,
+                        refetch: refetchLessons,
+                      } = getLessonsForChapter(chapter.chapter_id.toString());
 
-                      {expandedSections.includes(chapter.chapter_id.toString()) && (
-                        <div className="border-t">
-                          {loadingLessons[chapter.chapter_id] ? (
-                            <div className="p-4 text-center">
-                              <p className="text-muted-foreground">Đang tải bài học...</p>
-                            </div>
-                          ) : chapterLessons[chapter.chapter_id]?.length > 0 ? (
-                            chapterLessons[chapter.chapter_id].map((lesson) => (
-                              <div
-                                key={lesson.lesson_id}
-                                className="p-4 flex justify-between items-center hover:bg-muted/30 transition-colors border-b last:border-b-0"
-                              >
-                                <div className="flex items-center">
-                                  <div className="mr-3 text-primary">
-                                    {getLessonIcon(lesson.type || "video")}
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">{lesson.title}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {lesson.duration || "15:00"}
-                                    </p>
-                                  </div>
-                                </div>
-                                {lesson.preview ? (
-                                  <Button variant="ghost" size="sm">
-                                    Xem trước
-                                  </Button>
-                                ) : (
-                                  <div className="text-sm text-muted-foreground">
-                                    <i className="fas fa-lock"></i>
-                                  </div>
-                                )}
+                      return (
+                        <AccordionItem 
+                          key={chapter.chapter_id} 
+                          value={chapter.chapter_id.toString()}
+                          className="border rounded-lg overflow-hidden border-solid mb-2"
+                        >
+                          <AccordionTrigger className="px-4 py-4 hover:bg-muted/50 hover:no-underline">
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center">
+                                <h3 className="font-medium text-lg">{chapter.title}</h3>
+                                <Badge variant="outline" className="ml-3">
+                                  {chapter.lessons_count || 0} bài
+                                </Badge>
                               </div>
-                            ))
-                          ) : (
-                            <div className="p-4 text-center text-muted-foreground">
-                              <p>Không có bài học nào trong chương này</p>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="mt-2"
-                                onClick={() => fetchLessonsForChapter(chapter.chapter_id)}
-                              >
-                                <RefreshCcw className="h-3 w-3 mr-1" />
-                                Tải lại
-                              </Button>
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))
+                          </AccordionTrigger>
+                          <AccordionContent className="px-0">
+                            <div className="border-t">
+                              {isLoadingLessons ? (
+                                <div className="p-4 text-center">
+                                  <p className="text-muted-foreground">Đang tải bài học...</p>
+                                </div>
+                              ) : isErrorLessons ? (
+                                <div className="p-4 text-center text-muted-foreground">
+                                  <p>Không thể tải bài học</p>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="mt-2"
+                                    onClick={() => refetchLessons()}
+                                  >
+                                    <RefreshCcw className="h-3 w-3 mr-1" />
+                                    Tải lại
+                                  </Button>
+                                </div>
+                              ) : lessonsData?.data?.length > 0 ? (
+                                lessonsData.data.map((lesson: any) => (
+                                  <div
+                                    key={lesson.lesson_id}
+                                    className="p-4 flex justify-between items-center hover:bg-muted/30 transition-colors border-b last:border-b-0"
+                                  >
+                                    <div className="flex items-center">
+                                      <div className="mr-3 text-primary">
+                                        {getLessonIcon(lesson.type || "video")}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium">{lesson.title}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {lesson.duration || "15:00"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    {lesson.preview ? (
+                                      <Button variant="ghost" size="sm">
+                                        Xem trước
+                                      </Button>
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground">
+                                        <i className="fas fa-lock"></i>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="p-4 text-center text-muted-foreground">
+                                  <p>Không có bài học nào trong chương này</p>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="mt-2"
+                                    onClick={() => refetchLessons()}
+                                  >
+                                    <RefreshCcw className="h-3 w-3 mr-1" />
+                                    Tải lại
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
                 ) : (
                   <div className="text-center py-8 border rounded-lg">
                     <p className="text-muted-foreground">Chưa có chương nào cho khóa học này.</p>
