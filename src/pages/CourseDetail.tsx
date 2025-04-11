@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Clock, BarChart, Users, Award, CheckCircle2, 
-  PlayCircle, FileText, Download, ShoppingCart, RefreshCcw 
+  PlayCircle, FileText, Download, ShoppingCart, RefreshCcw, 
+  Lock, LockOpen 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,10 +16,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { courseService } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/ui/accordion";
 
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   // Fetch course data from API
   const { data: courseResponse, isLoading, error, refetch } = useQuery({
@@ -30,9 +36,6 @@ const CourseDetail: React.FC = () => {
   const course = courseResponse?.data;
   const chapters = course?.chapters || [];
   
-  console.log("Course data:", course);
-  console.log("Chapters:", chapters);
-
   // Enroll course mutation
   const enrollMutation = useMutation({
     mutationFn: () => courseService.enrollCourse(id as string),
@@ -46,7 +49,7 @@ const CourseDetail: React.FC = () => {
     }
   });
 
-  // Fetch lessons for each chapter
+  // State to track which chapters have loaded lessons
   const [chapterLessons, setChapterLessons] = useState<Record<string, any[]>>({});
   const [loadingLessons, setLoadingLessons] = useState<Record<string, boolean>>({});
 
@@ -77,17 +80,11 @@ const CourseDetail: React.FC = () => {
     enrollMutation.mutate();
   };
 
-  const toggleSection = (sectionId: string) => {
-    // If not already expanded, fetch lessons
-    if (!expandedSections.includes(sectionId)) {
-      fetchLessonsForChapter(sectionId);
+  // Pre-fetch lessons when accordion value changes
+  const handleAccordionValueChange = (value: string) => {
+    if (value) {
+      fetchLessonsForChapter(value);
     }
-    
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
   };
 
   // Loading state
@@ -308,37 +305,31 @@ const CourseDetail: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {chapters.length > 0 ? (
-                  chapters.map((chapter) => (
-                    <div key={chapter.chapter_id} className="border rounded-lg overflow-hidden">
-                      <button
-                        className="w-full p-4 flex justify-between items-center hover:bg-muted/50 transition-colors"
-                        onClick={() => toggleSection(chapter.chapter_id.toString())}
-                      >
+              {chapters.length > 0 ? (
+                <Accordion type="single" collapsible onValueChange={handleAccordionValueChange}>
+                  {chapters.map((chapter) => (
+                    <AccordionItem 
+                      key={chapter.chapter_id} 
+                      value={chapter.chapter_id.toString()} 
+                      className="border rounded-lg mb-4"
+                    >
+                      <AccordionTrigger className="px-4 py-3 hover:bg-muted/50">
                         <div className="flex items-center">
-                          <h3 className="font-medium text-lg">{chapter.title}</h3>
+                          <h3 className="font-medium text-lg text-left">{chapter.title}</h3>
                           <Badge variant="outline" className="ml-3">
                             {chapter.lessons_count || 0} bài
                           </Badge>
                         </div>
-                        <div>
-                          {expandedSections.includes(chapter.chapter_id.toString()) ? (
-                            <span>−</span>
-                          ) : (
-                            <span>+</span>
-                          )}
-                        </div>
-                      </button>
-
-                      {expandedSections.includes(chapter.chapter_id.toString()) && (
-                        <div className="border-t">
-                          {loadingLessons[chapter.chapter_id] ? (
-                            <div className="p-4 text-center">
-                              <p className="text-muted-foreground">Đang tải bài học...</p>
-                            </div>
-                          ) : chapterLessons[chapter.chapter_id]?.length > 0 ? (
-                            chapterLessons[chapter.chapter_id].map((lesson) => (
+                      </AccordionTrigger>
+                      
+                      <AccordionContent className="border-t">
+                        {loadingLessons[chapter.chapter_id] ? (
+                          <div className="p-4 text-center">
+                            <p className="text-muted-foreground">Đang tải bài học...</p>
+                          </div>
+                        ) : chapterLessons[chapter.chapter_id]?.length > 0 ? (
+                          <div>
+                            {chapterLessons[chapter.chapter_id].map((lesson) => (
                               <div
                                 key={lesson.lesson_id}
                                 className="p-4 flex justify-between items-center hover:bg-muted/30 transition-colors border-b last:border-b-0"
@@ -360,44 +351,44 @@ const CourseDetail: React.FC = () => {
                                   </Button>
                                 ) : (
                                   <div className="text-sm text-muted-foreground">
-                                    <i className="fas fa-lock"></i>
+                                    <Lock className="h-4 w-4" />
                                   </div>
                                 )}
                               </div>
-                            ))
-                          ) : (
-                            <div className="p-4 text-center text-muted-foreground">
-                              <p>Không có bài học nào trong chương này</p>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="mt-2"
-                                onClick={() => fetchLessonsForChapter(chapter.chapter_id)}
-                              >
-                                <RefreshCcw className="h-3 w-3 mr-1" />
-                                Tải lại
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 border rounded-lg">
-                    <p className="text-muted-foreground">Chưa có chương nào cho khóa học này.</p>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => refetch()}
-                    >
-                      <RefreshCcw className="h-3 w-3 mr-1" />
-                      Tải lại
-                    </Button>
-                  </div>
-                )}
-              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-4 text-center text-muted-foreground">
+                            <p>Không có bài học nào trong chương này</p>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="mt-2"
+                              onClick={() => fetchLessonsForChapter(chapter.chapter_id)}
+                            >
+                              <RefreshCcw className="h-3 w-3 mr-1" />
+                              Tải lại
+                            </Button>
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <div className="text-center py-8 border rounded-lg">
+                  <p className="text-muted-foreground">Chưa có chương nào cho khóa học này.</p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => refetch()}
+                  >
+                    <RefreshCcw className="h-3 w-3 mr-1" />
+                    Tải lại
+                  </Button>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
