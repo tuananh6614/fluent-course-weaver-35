@@ -20,7 +20,7 @@ const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/
 const ManageUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch users - modified to use onSuccess/onError pattern compatible with React Query v5
+  // Fetch users - fixed to use proper query options structure
   const { data: usersResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -31,14 +31,12 @@ const ManageUsers = () => {
       });
       return response.data;
     },
-    // Using meta.onError instead of direct onError property
-    meta: {
-      onError: (err: any) => {
-        console.error("Error fetching users:", err);
-        toast.error("Không thể tải danh sách người dùng", {
-          description: err.response?.data?.message || "Vui lòng thử lại sau"
-        });
-      }
+    // Using onError directly without meta (proper way for React Query v5)
+    onError: (err: any) => {
+      console.error("Error fetching users:", err);
+      toast.error("Không thể tải danh sách người dùng", {
+        description: err.response?.data?.message || "Vui lòng thử lại sau"
+      });
     }
   });
 
