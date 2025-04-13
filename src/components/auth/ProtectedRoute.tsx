@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authService } from '@/services/api';
+import { toast } from 'sonner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -26,13 +27,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     const verifyAuth = async () => {
       try {
-        const response = await authService.getProfile();
+        const response = await authService.verifyToken();
         setIsAuthenticated(true);
-        setUserRole(response.data.role);
+        setUserRole(response.data.user.role);
+        
+        // Update stored user data with fresh data from server
+        localStorage.setItem('userData', JSON.stringify(response.data.user));
       } catch (error) {
         console.error('Authentication verification failed:', error);
+        // Clear invalid credentials
         localStorage.removeItem('token');
+        localStorage.removeItem('userData');
         setIsAuthenticated(false);
+        
+        toast.error('Phiên đăng nhập đã hết hạn', {
+          description: 'Vui lòng đăng nhập lại để tiếp tục'
+        });
       }
     };
 

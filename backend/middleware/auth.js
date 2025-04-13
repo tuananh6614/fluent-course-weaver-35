@@ -1,5 +1,5 @@
 
-const jwt = require('jsonwebtoken');
+const { verifyToken } = require('../utils/jwtUtils');
 const db = require('../config/db');
 
 exports.protect = async (req, res, next) => {
@@ -21,13 +21,11 @@ exports.protect = async (req, res, next) => {
     }
     
     try {
-      const decoded = jwt.verify(
-        token, 
-        process.env.JWT_SECRET || 'your_jwt_secret_key_here'
-      );
+      // Use the verifyToken function from utils
+      const decoded = verifyToken(token);
       
       const [rows] = await db.query(
-        'SELECT user_id, email, full_name, role FROM Users WHERE user_id = ?', 
+        'SELECT user_id, email, full_name, role, is_blocked FROM Users WHERE user_id = ?', 
         [decoded.id]
       );
       
@@ -35,6 +33,14 @@ exports.protect = async (req, res, next) => {
         return res.status(401).json({
           success: false,
           message: 'Người dùng không tồn tại'
+        });
+      }
+      
+      // Check if user is blocked
+      if (rows[0].is_blocked) {
+        return res.status(403).json({
+          success: false,
+          message: 'Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên'
         });
       }
       
@@ -47,6 +53,7 @@ exports.protect = async (req, res, next) => {
       });
     }
   } catch (error) {
+    console.error('Auth middleware error:', error);
     next(error);
   }
 };

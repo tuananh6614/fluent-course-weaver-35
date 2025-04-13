@@ -1,7 +1,7 @@
 
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
-const { generateToken } = require('../utils/jwtUtils');
+const { generateToken, getTokenExpiration } = require('../utils/jwtUtils');
 
 // @desc    Register user
 // @route   POST /api/register
@@ -85,6 +85,14 @@ exports.login = async (req, res, next) => {
     
     const user = users[0];
     
+    // Check if user is blocked
+    if (user.is_blocked) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên'
+      });
+    }
+    
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     
@@ -97,10 +105,12 @@ exports.login = async (req, res, next) => {
     
     // Generate token
     const token = generateToken(user);
+    const expiresAt = getTokenExpiration(token);
     
     res.status(200).json({
       success: true,
       token,
+      expiresAt, 
       user: {
         user_id: user.user_id,
         full_name: user.full_name,
@@ -110,6 +120,25 @@ exports.login = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// @desc    Verify token validity
+// @route   GET /api/verify-token
+// @access  Private
+exports.verifyToken = async (req, res) => {
+  try {
+    // If middleware passed, token is valid
+    res.status(200).json({
+      success: true,
+      message: 'Token hợp lệ',
+      user: req.user
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: 'Token không hợp lệ hoặc đã hết hạn'
+    });
   }
 };
 

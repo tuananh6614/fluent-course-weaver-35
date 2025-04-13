@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { toast } from "sonner";
 
@@ -29,6 +30,24 @@ api.interceptors.response.use(
   (error) => {
     console.error("API Error:", error);
     
+    // Handle token expiration
+    if (error.response?.status === 401) {
+      // Clear invalid credentials if the error is authentication related
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+        
+        toast.error('Phiên đăng nhập đã hết hạn', {
+          description: 'Vui lòng đăng nhập lại để tiếp tục'
+        });
+        
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
+      }
+    }
+    
     const message = 
       error.response?.data?.message || 
       'Đã xảy ra lỗi. Vui lòng thử lại sau.';
@@ -55,6 +74,11 @@ export const authService = {
   
   forgotPassword: async (email: string) => {
     const response = await api.post('/forgot-password', { email });
+    return response.data;
+  },
+  
+  verifyToken: async () => {
+    const response = await api.get('/verify-token');
     return response.data;
   },
   
