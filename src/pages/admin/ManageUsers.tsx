@@ -20,7 +20,7 @@ const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/
 const ManageUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch users - fixed to use proper query options structure
+  // Fetch users - properly structured for React Query v5
   const { data: usersResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -30,15 +30,18 @@ const ManageUsers = () => {
         }
       });
       return response.data;
-    },
-    // Using onError directly without meta (proper way for React Query v5)
-    onError: (err: any) => {
-      console.error("Error fetching users:", err);
-      toast.error("Không thể tải danh sách người dùng", {
-        description: err.response?.data?.message || "Vui lòng thử lại sau"
-      });
     }
   });
+
+  // Handle errors with useEffect instead of onError
+  useEffect(() => {
+    if (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Không thể tải danh sách người dùng", {
+        description: (error as any).response?.data?.message || "Vui lòng thử lại sau"
+      });
+    }
+  }, [error]);
 
   // Block/unblock user mutation
   const toggleBlockMutation = useMutation({
@@ -81,13 +84,6 @@ const ManageUsers = () => {
     const action = isBlocked ? 'unblock' : 'block';
     toggleBlockMutation.mutate({ userId, action });
   };
-
-  // Error handler for useQuery
-  useEffect(() => {
-    if (error) {
-      console.error("Error in useEffect:", error);
-    }
-  }, [error]);
 
   return (
     <Layout>
