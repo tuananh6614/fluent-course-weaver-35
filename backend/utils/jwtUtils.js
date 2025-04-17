@@ -1,37 +1,22 @@
 
 const jwt = require('jsonwebtoken');
 
+// Generate JWT token
 exports.generateToken = (user) => {
   return jwt.sign(
-    { 
-      id: user.user_id,
-      email: user.email,
-      role: user.role 
-    },
+    { id: user.user_id, role: user.role },
     process.env.JWT_SECRET || 'your_jwt_secret_key_here',
-    { expiresIn: '30d' } // 30 days expiration
+    { expiresIn: '30d' }
   );
 };
 
+// Verify JWT token
 exports.verifyToken = (token) => {
-  try {
-    return jwt.verify(
-      token, 
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here'
-    );
-  } catch (error) {
-    throw new Error('Token không hợp lệ hoặc đã hết hạn');
-  }
+  return jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key_here');
 };
 
+// Get token expiration time
 exports.getTokenExpiration = (token) => {
-  try {
-    const decoded = jwt.verify(
-      token, 
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here'
-    );
-    return new Date(decoded.exp * 1000); // Convert to milliseconds
-  } catch (error) {
-    return null;
-  }
+  const decoded = jwt.decode(token);
+  return decoded.exp * 1000; // Convert to milliseconds
 };
