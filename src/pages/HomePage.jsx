@@ -7,7 +7,7 @@ const HomePage = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">EduHub</h1>
@@ -30,7 +30,7 @@ const HomePage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-12 sm:px-6">
+      <main className="max-w-7xl mx-auto px-4 py-12 sm:px-6 text-center">
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Xin chào đến với EduHub</h2>
           <p className="text-xl text-gray-600 mb-8">Nơi bạn học những kỹ năng mới và nâng cao sự nghiệp</p>
